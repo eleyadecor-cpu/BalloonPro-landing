@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Balloon Pro - Професионален Калкулатор за Декоратори</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        .hero-gradient { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+    </style>
+</head>
+<body class="bg-gray-50">
+
+    <!-- Navigation -->
+    <nav class="flex items-center justify-between px-8 py-4 bg-white shadow-sm sticky top-0 z-50">
+        <div class="text-2xl font-bold text-indigo-600">Balloon<span class="text-gray-800">Pro</span></div>
+        <div class="hidden md:flex space-x-8 text-gray-600 font-medium">
+            <a href="#features" class="hover:text-indigo-600 transition">Възможности</a>
+            <a href="#pricing" class="hover:text-indigo-600 transition">Цени</a>
+            <a href="/balloon-pro" class="text-indigo-600 border-b-2 border-indigo-600">Калкулатор</a>
+        </div>
+        <a href="/login" class="bg-indigo-600 text-white px-6 py-2 rounded-full font-semibold hover:bg-indigo-700 transition">Вход</a>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero-gradient text-white py-20 px-8">
+        <div class="max-w-6xl mx-auto text-center">
+            <h1 class="text-4xl md:text-6xl font-bold mb-6">Спри да гадаеш цените.<br>Започни да печелиш.</h1>
+            <p class="text-xl mb-10 text-indigo-100 max-w-2xl mx-auto">
+                Единственият инструмент в България, създаден специално за балонисти. Изчисли материали, труд и печалба за секунди.
+            </p>
+            <div class="flex flex-col md:flex-row justify-center gap-4">
+                <a href="/balloon-pro" class="bg-white text-indigo-600 px-8 py-4 rounded-lg font-bold text-lg shadow-lg hover:bg-gray-100 transition">
+                    Опитай безплатно
+                </a>
+                <a href="#demo" class="border-2 border-white text-white px-8 py-4 rounded-lg font-bold text-lg hover:bg-white hover:text-indigo-600 transition">
+                    Виж как работи
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Value Proposition / Features -->
+    <section id="features" class="py-20 px-8">
+        <div class="max-w-6xl mx-auto grid md:grid-cols-3 gap-12">
+            <div class="text-center p-6">
+                <div class="bg-indigo-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 text-indigo-600 text-2xl">
+                    <i class="fas fa-calculator"></i>
+                </div>
+                <h3 class="text-xl font-bold mb-2">Точни изчисления</h3>
+                <p class="text-gray-600">Забрави за листите и химикалките. Автоматични формули за арки, колони и стени.</p>
+            </div>
+            <div class="text-center p-6">
+                <div class="bg-indigo-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 text-indigo-600 text-2xl">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <h3 class="text-xl font-bold mb-2">Управление на маржа</h3>
+                <p class="text-gray-600">Виж точно колко ти струват материалите и каква е чистата ти печалба.</p>
+            </div>
+            <div class="text-center p-6">
+                <div class="bg-indigo-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 text-indigo-600 text-2xl">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <h3 class="text-xl font-bold mb-2">Спести време</h3>
+                <p class="text-gray-600">Генерирай оферта за клиент за под 2 минути и увеличи професионализма си.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Call to Action -->
+    <section class="bg-gray-900 text-white py-16 px-8 text-center">
+        <h2 class="text-3xl font-bold mb-4">Готов ли си да вдигнеш нивото?</h2>
+        <p class="text-gray-400 mb-8 text-lg">Присъедини се към общността на модерните декоратори.</p>
+        <button class="bg-indigo-500 hover:bg-indigo-400 text-white px-10 py-4 rounded-full font-bold transition">
+            Към Balloon Pro Калкулатор
+        </button>
+    </section>
+
+</body>
+</html>
