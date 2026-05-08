@@ -81,7 +81,7 @@ export default function BPEvent({state, set, calc, summaryData}) {
 
         <div style={{display:'grid', gridTemplateColumns:'1fr 1fr', gap:15, marginTop:15}}>
           <div>
-            <Lbl>🚗 Километри (общо отиване и връщане)</Lbl>
+            <Lbl>🚗 Разстояние до локация (км)</Lbl>
             <input 
               type="number" 
               style={inp} 
@@ -94,7 +94,7 @@ export default function BPEvent({state, set, calc, summaryData}) {
             </div>
           </div>
           <div>
-            <Lbl>⏱️ Път в минути (общо)</Lbl>
+            <Lbl>⏱️ Пътуване до локация (минути)</Lbl>
             <input 
               type="number" 
               style={inp} 

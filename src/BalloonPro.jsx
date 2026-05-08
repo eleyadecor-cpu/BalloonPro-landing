@@ -123,26 +123,28 @@ function buildCalc(state) {
   const salePrice  = price
 
   // Timeline builder
-  const buildTL = (startTime) => {
+  const buildTL = (startTime, isDismantling = false) => {
     if (!startTime) return []
     const rows = []
     let cur = startTime
     const add = (label, secs, note = '') => {
-      rows.push({ time: cur, label, note })
-      cur = addMinToTime(cur, secs / 60)
+      const mins = Math.ceil(secs / 60)
+      rows.push({ time: cur, label, note: note || `${mins} мин`, mins })
+      cur = addMinToTime(cur, mins)
     }
-    if (travelMin) add('🚗 Тръгване', travelMin * 60, `${travelKm} км`)
-    add('📦 Разопаковане', tPrep)
-    if (!state.inflateOnSite) add('🎈 Надуване', tInflate + tFoil)
-    add('📍 Монтаж', tAttach, `${clusters} букета`)
-    if (tSign > 0) add('✍️ Надписи', tSign)
-    if (state.hasPhotoTime) add('📸 Снимки', (state.photoTime || 10) * 60)
-    rows.push({ time: cur, label: '✅ Готово', note: '' })
+    if (travelMin) add('🚗 Тръгване', travelMin * 60, `${travelKm} км · ${travelMin} мин`)
+    add('📦 Разопаковане', tPrep, `${Math.ceil(tPrep/60)} мин`)
+    if (!isDismantling && !state.inflateOnSite) add('🎈 Надуване', tInflate + tFoil, `${Math.ceil((tInflate+tFoil)/60)} мин`)
+    add('📍 Монтаж', tAttach, `${clusters} букета · ${Math.ceil(tAttach/60)} мин`)
+    if (tSign > 0) add('✍️ Надписи', tSign, `${Math.ceil(tSign/60)} мин`)
+    if (!isDismantling && state.hasPhotoTime) add('📸 Снимки', (state.photoTime || 10) * 60, `${state.photoTime || 10} мин`)
+    rows.push({ time: cur, label: isDismantling ? '✅ Демонтаж завършен' : '✅ Готово', note: '', mins: 0 })
     return rows
   }
 
-  const setupTL = buildTL(state.eventStart)
-  const dismTL  = buildTL(state.dismSameDay ? state.eventEnd : state.dismTime)
+  const setupTL = buildTL(state.eventStart, false)
+  const dismTL  = buildTL(state.dismSameDay ? state.eventEnd : state.dismTime, true)
+
 
   return {
     clusters, clustersPerColor, colorCounts, accentCounts,
