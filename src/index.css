@@ -1,0 +1,56 @@
+:root {
+  --mauve-dark: #382842; /* Твоето тъмно лилаво (Aubergine) */
+  --jubilee: #805C98;    /* Твоето основно лилаво (Jubilee) */
+  --crocus: #BD97C6;     /* Светъл акцент (Crocus Petal) */
+  --lilac: #DFB6D6;      /* Най-светло лилаво */
+  --bg: #fdf9fd;
+  --card: #ffffff;
+  --border: #e8ddf5;
+  --text: #382842;
+  --gray: #7a7490;
+  --green: #4e8c69;
+  --red: #a34a4a;
+}
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background-color: var(--bg);
+  color: var(--text);
+  margin: 0;
+  padding: 0;
+}
+
+/* Контейнер за страниците */
+.page-container {
+  margin-left: 240px; /* Място за навигацията */
+  padding: 40px;
+}
+
+/* Карти за статистика */
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
+  margin-bottom: 30px;
+}
+
+.stat-card {
+  background: white;
+  padding: 20px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  box-shadow: 0 4px 15px rgba(128, 92, 152, 0.05);
+}
+
+.stat-card .label { font-size: 11px; color: var(--gray); text-transform: uppercase; letter-spacing: 1px; font-weight: 700; }
+.stat-card .value { font-size: 32px; font-weight: 800; color: var(--jubilee); margin: 5px 0; }
+
+/* Метеорологичен модул */
+.weather-card {
+  background: linear-gradient(135deg, var(--jubilee), var(--mauve-dark));
+  color: white;
+  padding: 20px;
+  border-radius: 20px;
+  width: 280px;
+  box-shadow: 0 10px 20px rgba(56, 40, 66, 0.2);
+}

@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Balloon Pro - Професионален Калкулатор за Декоратори</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        
+        .text-jubilee { color: #805C98; }
+        .color-jubilee { background-color: #805C98; }
+        
+        /* Твоята снимка като фон на Hero секцията */
+        .hero-with-image { 
+            background-image: url('hero-image-page-2.jpg'); /* Cloudflare ще я намери в dist */
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            position: relative; /* За да работи слоят (овърлей) */
+        }
+        
+        /* Слой (овърлей) с цвят Aubergine Mauve за по-добра четливост */
+        .hero-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(56, 40, 66, 0.7); /* Твоят Aubergine цвят с 70% прозрачност */
+            z-index: 1; /* Остава под текста */
+        }
+        
+        /* За да изведем текста над слоят */
+        .hero-content {
+            position: relative;
+            z-index: 10;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+
+    <nav class="flex items-center justify-between px-8 py-4 bg-white shadow-sm sticky top-0 z-50">
+        <div class="text-2xl font-bold text-jubilee">Balloon<span class="text-gray-800">Pro</span></div>
+        <div class="hidden md:flex space-x-8 text-gray-600 font-medium">
+            <a href="#features" class="hover:text-jubilee transition">Възможности</a>
+            <a href="#pricing" class="hover:text-jubilee transition">Цени</a>
+            <a href="/balloon-pro" class="text-jubilee border-b-2 border-indigo-300">Калкулатор</a>
+        </div>
+        <a href="/login" class="color-jubilee text-white px-6 py-2 rounded-full font-semibold hover:bg-[#382842] transition">Вход</a>
+    </nav>
+
+    <section class="hero-with-image text-white py-24 px-8 relative">
+        <div class="hero-overlay"></div> <div class="max-w-6xl mx-auto text-center hero-content relative z-10">
+            <h1 class="text-4xl md:text-6xl font-bold mb-6">Спри да гадаеш цените.<br>Започни да печелиш.</h1>
+            <p class="text-xl mb-10 text-[#DFB6D6] max-w-2xl mx-auto">
+                Единственият инструмент в България, създаден специално за балонисти. Изчисли материали, труд и печалба за секунди.
+            </p>
+            <div class="flex flex-col md:row justify-center gap-4 hero-content">
+                <a href="/balloon-pro" class="bg-white text-[#382842] px-8 py-4 rounded-lg font-bold text-lg shadow-lg hover:bg-[#DFB6D6] transition relative z-10">
+                    Опитай безплатно
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <section id="features" class="py-20 px-8">
+        <div class="max-w-6xl mx-auto grid md:grid-cols-3 gap-12">
+            <div class="text-center p-6">
+                <div class="bg-[#DFB6D6] w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 text-[#382842] text-2xl">
+                    <i class="fas fa-calculator"></i>
+                </div>
+                <h3 class="text-xl font-bold mb-2">Точни изчисления</h3>
+                <p class="text-gray-600">Забрави за листите и химикалките. Автоматични формули за арки, колони и стени.</p>
+            </div>
+            <div class="text-center p-6">
+                <div class="bg-[#DFB6D6] w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 text-[#382842] text-2xl">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <h3 class="text-xl font-bold mb-2">Управление на маржа</h3>
+                <p class="text-gray-600">Виж точно колко ти струват материалите и каква е чистата ти печалба.</p>
+            </div>
+            <div class="text-center p-6">
+                <div class="bg-[#DFB6D6] w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 text-[#382842] text-2xl">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <h3 class="text-xl font-bold mb-2">Спести време</h3>
+                <p class="text-gray-600">Генерирай оферта за клиент за под 2 минути и увеличи професионализма си.</p>
+            </div>
+        </div>
+    </section>
+    <section id="pricing" class="py-24 px-8 bg-white">
+        <div class="max-w-6xl mx-auto text-center mb-16">
+            <h2 class="text-3xl md:text-5xl font-bold text-[#382842] mb-4">Избери своя план</h2>
+            <p class="text-gray-600">Инвестирай в професионализма си и спести часове работа всяка седмица.</p>
+        </div>
+
+        <div class="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+            <div class="border border-gray-200 rounded-3xl p-8 hover:shadow-xl transition flex flex-col">
+                <h3 class="text-xl font-bold mb-2 text-[#382842]">Старт</h3>
+                <div class="text-4xl font-bold mb-6 text-[#382842]">0 лв. <span class="text-sm text-gray-400 font-normal">/ месец</span></div>
+                <ul class="text-gray-600 space-y-4 mb-8 flex-grow">
+                    <li><i class="fas fa-check text-[#805C98] mr-2"></i> Основен калкулатор</li>
+                    <li><i class="fas fa-check text-[#805C98] mr-2"></i> До 3 оферти на месец</li>
+                    <li><i class="fas fa-check text-[#805C98] mr-2"></i> Стандартни формули</li>
+                </ul>
+                <button class="w-full py-4 border-2 border-[#805C98] text-[#805C98] rounded-xl font-bold hover:bg-[#DFB6D6] transition">Започни безплатно</button>
+            </div>
+
+            <div class="bg-[#382842] rounded-3xl p-8 shadow-2xl transform md:-translate-y-4 flex flex-col text-white relative overflow-hidden">
+                <div class="absolute top-4 right-4 bg-[#DFB6D6] text-[#382842] text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-widest">Най-популярен</div>
+                <h3 class="text-xl font-bold mb-2">Pro Декоратор</h3>
+                <div class="text-4xl font-bold mb-6">19 лв. <span class="text-sm text-[#DFB6D6] font-normal">/ месец</span></div>
+                <ul class="space-y-4 mb-8 flex-grow">
+                    <li><i class="fas fa-check text-[#DFB6D6] mr-2"></i> Неограничени калкулации</li>
+                    <li><i class="fas fa-check text-[#DFB6D6] mr-2"></i> PDF генериране на оферти</li>
+                    <li><i class="fas fa-check text-[#DFB6D6] mr-2"></i> Собствено лого в офертата</li>
+                    <li><i class="fas fa-check text-[#DFB6D6] mr-2"></i> База данни с клиенти</li>
+                </ul>
+                <button class="w-full py-4 bg-[#805C98] text-white rounded-xl font-bold shadow-lg hover:bg-[#DFB6D6] hover:text-[#382842] transition">Избери Pro</button>
+            </div>
+
+            <div class="border border-gray-200 rounded-3xl p-8 hover:shadow-xl transition flex flex-col">
+                <h3 class="text-xl font-bold mb-2 text-[#382842]">Агенция</h3>
+                <div class="text-4xl font-bold mb-6 text-[#382842]">49 лв. <span class="text-sm text-gray-400 font-normal">/ месец</span></div>
+                <ul class="text-gray-600 space-y-4 mb-8 flex-grow">
+                    <li><i class="fas fa-check text-[#805C98] mr-2"></i> Всичко от Pro плана</li>
+                    <li><i class="fas fa-check text-[#805C98] mr-2"></i> Достъп за 3-ма служители</li>
+                    <li><i class="fas fa-check text-[#805C98] mr-2"></i> Приоритетна поддръжка</li>
+                </ul>
+                <button class="w-full py-4 border-2 border-[#382842] text-[#382842] rounded-xl font-bold hover:bg-gray-100 transition">Свържи се с нас</button>
+            </div>
+        </div>
+    </section>
+
+    <section class="bg-[#382842] text-white py-16 px-8 text-center relative z-10">
+        <h2 class="text-3xl font-bold mb-4">Готов ли си да вдигнеш нивото?</h2>
+        <p class="text-[#DFB6D6] mb-8 text-lg">Присъедини се към общността на модерните декоратори.</p>
+        <button class="color-jubilee hover:bg-[#DFB6D6] hover:text-[#382842] text-white px-10 py-4 rounded-full font-bold transition">
+            Към Balloon Pro Калкулатор
+        </button>
+    </section>
+
+    <div id="root"></div>
+</body>
+</html>
