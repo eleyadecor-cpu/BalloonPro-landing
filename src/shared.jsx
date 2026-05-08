@@ -32,3 +32,4 @@ export const pillLight = (active, color) => ({
   fontWeight: active ? '700' : '400',
   cursor: 'pointer'
 });
+export const pill = (active) => ({ padding: '8px 15px', borderRadius: '20px', border: 'none', background: active ? C.l700 : C.l100, color: active ? '#fff' : C.l600, fontSize: '12px', fontWeight: '600', cursor: 'pointer' });
