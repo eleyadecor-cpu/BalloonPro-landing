@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { C, fmt } from './shared.jsx'
+import { C } from './shared.jsx'
 import BPHome     from './BPHome.jsx'
 import BPBalloons from './BPBalloons.jsx'
 import BPAccents  from './BPAccents.jsx'
@@ -23,12 +23,8 @@ export default function BalloonPro() {
   const [state, setState] = useState(INIT)
   const set = (k, v) => setState(prev => ({ ...prev, [k]: v }))
 
-  // Тук е логиката за изчисленията, която твоите под-компоненти изискват
-  const calc = {
-    clusters: Math.ceil(state.garlandLen * 12),
-    totalCost: 0, // Тези ще се смятат вътре в BPResult
-    salePrice: 0
-  }
+  // Тези данни се подават към всяка стъпка
+  const calc = { clusters: Math.ceil(state.garlandLen * 12) }
 
   const PAGES = [
     <BPHome state={state} set={set} calc={calc} />,
@@ -43,29 +39,20 @@ export default function BalloonPro() {
   const steps = ['Основа', 'Цветове', 'Акценти', 'Услуги', 'Локация', 'Цени', 'Финал']
 
   return (
-    <div style={{ background: '#fdf9fd', minHeight: '100%' }}>
-      {/* Модерна навигация със стъпки */}
-      <div style={{ display: 'flex', gap: '8px', marginBottom: '30px', overflowX: 'auto', padding: '5px' }}>
+    <div style={{ padding: '10px' }}>
+      <div style={{ display: 'flex', gap: '8px', marginBottom: '20px', overflowX: 'auto' }}>
         {steps.map((label, i) => (
           <button key={i} onClick={() => setStep(i)} style={{
-            padding: '10px 18px', borderRadius: '15px', border: 'none',
-            background: step === i ? C.l400 : '#fff', color: step === i ? '#fff' : C.l400,
-            cursor: 'pointer', fontWeight: 'bold', fontSize: '13px', boxShadow: '0 2px 5px rgba(0,0,0,0.05)', whiteSpace: 'nowrap'
+            padding: '8px 15px', borderRadius: '15px', border: 'none',
+            background: step === i ? '#735377' : '#eee', color: step === i ? 'white' : '#888',
+            cursor: 'pointer', fontWeight: 'bold', fontSize: '12px'
           }}>
             {i + 1}. {label}
           </button>
         ))}
       </div>
-
-      <div style={{ background: '#fff', borderRadius: '24px', padding: '30px', border: `1px solid ${C.l100}`, boxShadow: '0 10px 30px rgba(115,83,119,0.05)' }}>
+      <div style={{ background: 'white', borderRadius: '20px', padding: '20px', border: '1px solid #eee' }}>
         {PAGES[step]}
-      </div>
-
-      <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '30px' }}>
-        <button onClick={() => setStep(s => Math.max(0, s - 1))} style={{ background: 'none', border: 'none', color: C.gray, cursor: 'pointer', fontWeight: 'bold' }}>← Назад</button>
-        <button onClick={() => setStep(s => Math.min(steps.length - 1, s + 1))} style={{ background: C.l400, color: '#fff', border: 'none', padding: '12px 35px', borderRadius: '14px', cursor: 'pointer', fontWeight: 'bold' }}>
-          {step === steps.length - 1 ? 'Запази' : 'Напред →'}
-        </button>
       </div>
     </div>
   )
