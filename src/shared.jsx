@@ -9,6 +9,8 @@ export const C = {
 
 export const inp = { width: '100%', padding: '10px', border: `1px solid ${C.l100}`, borderRadius: '6px', fontSize: '14px' };
 
+export const fmt = (n) => typeof n === 'number' ? n.toFixed(2) : n;
+
 export const Lbl = ({children}) => <label style={{display:'block', fontSize:11, fontWeight:700, color:C.l600, marginBottom:5, textTransform:'uppercase'}}>{children}</label>;
 
 export const Card = ({children, style={}}) => <div style={{background:'#fff', borderRadius:12, padding:20, boxShadow:'0 2px 8px rgba(0,0,0,0.06)', ...style}}>{children}</div>;
@@ -16,6 +18,10 @@ export const Card = ({children, style={}}) => <div style={{background:'#fff', bo
 export const CardTitle = ({children}) => <div style={{fontSize:13, fontWeight:700, color:C.l600, textTransform:'uppercase', marginBottom:12, letterSpacing:'0.05em'}}>{children}</div>;
 
 export const ScriptH = ({children}) => <h2 style={{fontFamily:'serif', fontSize:28, color:C.l700, marginBottom:16}}>{children}</h2>;
+
+export const DateInput = ({value, onChange, style={}}) => <input type="date" value={value} onChange={onChange} style={{...inp, ...style}} />;
+
+export const TimeInput = ({value, onChange, style={}}) => <input type="time" value={value} onChange={onChange} style={{...inp, ...style}} />;
 
 export const BALLOON_SIZES = [
   { inch: 5, cm: 13, timeMin: 0.1 },
