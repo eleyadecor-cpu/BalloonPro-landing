@@ -1,74 +1,217 @@
+import React from 'react'
+
+export const FONT_SCRIPT = "'TT Lovelies Script','Monotype Corsiva',cursive"
+export const FONT_SERIF  = "'Playfair Display',Georgia,serif"
+export const FONT_SANS   = "'DM Sans',system-ui,sans-serif"
+
 export const C = {
-  l50: '#fdf7ff',
-  l100: '#f3e8ff',
-  l400: '#c084fc',
-  l600: '#9333ea',
-  l700: '#7e22ce',
-  gray: '#6b7280'
-};
+  l50:  '#fcfaff',
+  l100: '#f8ecff',
+  l200: '#d9cde4',
+  l300: '#cebedc',
+  l400: '#a989ab',
+  l500: '#a989ab',
+  l600: '#735377',
+  l700: '#735377',
+  l800: '#312A44',
+  l900: '#312A44',
+  blush:'#f8ecff', blushD:'#a989ab',
+  gray:'#7a7490', ink:'#312A44', white:'#ffffff',
+}
 
-export const inp = { width: '100%', padding: '10px', border: `1px solid ${C.l100}`, borderRadius: '6px', fontSize: '14px' };
+export const card = {
+  background:'#fff', border:'1px solid #d9cde4',
+  padding:'20px 22px', marginBottom:14,
+}
 
-export const fmt = (n) => typeof n === 'number' ? n.toFixed(2) : n;
+export const inp = {
+  width:'100%', padding:'10px 13px',
+  border:'1px solid #d9cde4', borderRadius:0,
+  fontFamily:FONT_SANS, fontSize:14, fontWeight:500,
+  color:'#312A44', background:'#f8ecff', outline:'none',
+  boxSizing:'border-box',
+}
 
-export const Lbl = ({children}) => <label style={{display:'block', fontSize:11, fontWeight:700, color:C.l600, marginBottom:5, textTransform:'uppercase'}}>{children}</label>;
+export const lbl = {
+  display:'block', fontSize:10, fontWeight:600,
+  textTransform:'uppercase', letterSpacing:'.8px',
+  color:'#7a7490', marginBottom:6,
+}
 
-export const Card = ({children, style={}}) => <div style={{background:'#fff', borderRadius:12, padding:20, boxShadow:'0 2px 8px rgba(0,0,0,0.06)', ...style}}>{children}</div>;
+export function pill(active, color='#735377') {
+  return {
+    padding:'7px 15px', border:`1px solid ${active?color:'#d9cde4'}`,
+    background: active ? color : '#fff',
+    color: active ? '#fff' : '#7a7490',
+    fontFamily:FONT_SANS, fontSize:12, fontWeight:500,
+    cursor:'pointer', borderRadius:0,
+  }
+}
 
-export const CardTitle = ({children}) => <div style={{fontSize:13, fontWeight:700, color:C.l600, textTransform:'uppercase', marginBottom:12, letterSpacing:'0.05em'}}>{children}</div>;
+export function pillLight(active, color='#735377') {
+  return {
+    padding:'7px 15px', border:`1px solid ${active?color:'#d9cde4'}`,
+    background: active ? '#f8ecff' : '#fff',
+    color: active ? color : '#7a7490',
+    fontFamily:FONT_SANS, fontSize:12, fontWeight:500,
+    cursor:'pointer', borderRadius:0,
+  }
+}
 
-export const ScriptH = ({children}) => <h2 style={{fontFamily:'serif', fontSize:28, color:C.l700, marginBottom:16}}>{children}</h2>;
+export function Lbl({children}) {
+  return <label style={lbl}>{children}</label>
+}
 
-export const DateInput = ({value, onChange, style={}}) => <input type="date" value={value} onChange={onChange} style={{...inp, ...style}} />;
+export function CardTitle({children}) {
+  return (
+    <div style={{fontSize:10,fontWeight:600,textTransform:'uppercase',letterSpacing:'1px',color:'#735377',marginBottom:14,display:'flex',alignItems:'center',gap:8}}>
+      {children}
+      <span style={{flex:1,height:1,background:'#d9cde4',display:'block'}} />
+    </div>
+  )
+}
 
-export const TimeInput = ({value, onChange, style={}}) => <input type="time" value={value} onChange={onChange} style={{...inp, ...style}} />;
+export function ScriptH({text, sub}) {
+  return (
+    <div style={{marginBottom:22}}>
+      <div style={{fontFamily:FONT_SCRIPT,fontSize:36,color:'#312A44',lineHeight:1.1}}>{text}</div>
+      {sub && <div style={{fontSize:11,color:'#7a7490',marginTop:4}}>{sub}</div>}
+    </div>
+  )
+}
+
+export function Card({children, style}) {
+  return <div style={{...card,...style}}>{children}</div>
+}
+
+export function InfoBand({children, color='#735377', bg}) {
+  return (
+    <div style={{background:bg||'#f8ecff',padding:'10px 16px',fontSize:11,color,marginBottom:14}}>
+      {children}
+    </div>
+  )
+}
+
+export function SzBtn({inch, cm, active, onClick}) {
+  return (
+    <button style={pillLight(active)} onClick={onClick}>
+      {inch}" <span style={{fontSize:10,opacity:.7}}>({cm}см)</span>
+    </button>
+  )
+}
 
 export const BALLOON_SIZES = [
-  { inch: 5, cm: 13, timeMin: 0.1 },
-  { inch: 10, cm: 26, timeMin: 0.2 },
-  { inch: 12, cm: 30, timeMin: 0.25 },
-  { inch: 18, cm: 45, timeMin: 0.6 },
-  { inch: 36, cm: 90, timeMin: 1.5 }
-];
+  {inch:5,cm:13},{inch:6,cm:15},{inch:9,cm:23},{inch:10,cm:26},
+  {inch:11,cm:28},{inch:12,cm:30},{inch:16,cm:41},{inch:18,cm:46},
+  {inch:24,cm:61},{inch:36,cm:91},
+]
 
-export const FOIL_SIZES = [
-  { name: '18"', cm: 45, timeMin: 0.3 },
-  { name: '36"', cm: 90, timeMin: 0.5 },
-  { name: '40"', cm: 100, timeMin: 0.6 }
-];
-
-export const MANUFACTURERS = ['Kalisan', 'Gemar', 'Qualatex', 'Sempertex', 'Tuftex', 'Друг'];
+export const MANUFACTURERS = {
+  gemar:    {name:'Gemar',flag:'🇮🇹',series:{pastello:'Pastello (Пастел)',metal:'Metal (Металик)',crystal:'Crystal (Хром)',perl:'Pearl (Перлен)'}},
+  sempertex:{name:'Sempertex',flag:'🇨🇴',series:{deluxe:'Deluxe (Пастел)',reflex:'Reflex (Металик)',chrome:'Chrome (Хром)'}},
+  qualatex: {name:'Qualatex',flag:'🇺🇸',series:{standard:'Standard (Пастел)',jewel:'Jewel (Наситен)',chrome:'Chrome (Огледален)'}},
+  belbal:   {name:'Belbal',flag:'🇧🇪',series:{pastel:'Pastel (Пастел)',pearl:'Pearl (Перлен)',crystal:'Crystal (Хром)',metal:'Metal (Металик)'}},
+  amscan:   {name:'Amscan',flag:'🌍',series:{fashion:'Fashion (Пастел)',metallic:'Metallic (Металик)'}},
+  manual:   {name:'Въведи ръчно',flag:'✏️',series:{}},
+}
 
 export const DENSITY = {
-  loose: { label: 'Рядко', value: 0.7 },
-  normal: { label: 'Нормално', value: 1.0 },
-  dense: { label: 'Плътно', value: 1.3 }
-};
+  sparse:  {label:'Рядко',     factor:0.85},
+  standard:{label:'Стандартно',factor:1.0},
+  dense:   {label:'Плътно',    factor:1.2},
+  organic: {label:'Органик',   factor:1.5},
+}
 
-export const TEMPO_PRESETS = [
-  { label: 'Бавно', bph: 40 },
-  { label: 'Нормално', bph: 60 },
-  { label: 'Бързо', bph: 80 }
-];
+export const TEMPO_PRESETS = {
+  beginner:{label:'Начинаещ', pair10:28,pair5:32,b18:38,asm:28},
+  medium:  {label:'Средно',   pair10:22,pair5:26,b18:30,asm:22},
+  advanced:{label:'Напреднал',pair10:15,pair5:19,b18:22,asm:15},
+}
 
-export const pill = (active) => ({
-  padding: '8px 15px',
-  borderRadius: '20px',
-  border: 'none',
-  background: active ? C.l700 : C.l100,
-  color: active ? '#fff' : C.l600,
-  fontSize: '12px',
-  fontWeight: '600',
-  cursor: 'pointer'
-});
+export const FOIL_SIZES = [
+  {label:'9" мини',        inch:9, cm:23,timeMin:1},
+  {label:'18" стандартен', inch:18,cm:46,timeMin:2},
+  {label:'24" голям',      inch:24,cm:61,timeMin:3},
+  {label:'32" джъмбо',     inch:32,cm:81,timeMin:4},
+  {label:'36" гигант',     inch:36,cm:91,timeMin:5},
+  {label:'Цифра/Буква',    inch:34,cm:86,timeMin:3},
+]
 
-export const pillLight = (active, color) => ({
-  padding: '6px 12px',
-  borderRadius: '20px',
-  border: active ? `2px solid ${color}` : `1px solid #eee`,
-  background: active ? `${color}15` : '#fff',
-  color: active ? color : '#999',
-  fontSize: '12px',
-  fontWeight: active ? '700' : '400',
-  cursor: 'pointer'
-});
+export function fmt(secs) {
+  if (!secs||secs<=0) return '0мин'
+  const h=Math.floor(secs/3600), m=Math.ceil((secs%3600)/60)
+  if (h===0) return `${m}мин`
+  if (m===0) return `${h}ч`
+  return `${h}ч ${m}мин`
+}
+
+export function addMins(dateStr, timeStr, addMinutes) {
+  if (!timeStr) return '—'
+  const [h,m] = timeStr.split(':').map(Number)
+  let total = h*60 + m + addMinutes
+  const dayOffset = Math.floor(((total%1440)+1440)/1440)-1+(total<0?-1:0)
+  total = ((total%1440)+1440)%1440
+  const nh=Math.floor(total/60), nm=total%60
+  const ts=`${String(nh).padStart(2,'0')}:${String(nm).padStart(2,'0')}`
+  if (dayOffset!==0 && dateStr) {
+    try {
+      const d=new Date(dateStr); d.setDate(d.getDate()+dayOffset)
+      return `${d.toLocaleDateString('bg-BG',{day:'2-digit',month:'2-digit'})} ${ts}`
+    } catch(e) { return ts }
+  }
+  return ts
+}
+
+export function calcClusters(lengthCm, diamCm, perCluster, densityFactor) {
+  if (!diamCm||diamCm<=0) return 0
+  return Math.ceil((lengthCm/diamCm)*4.8*densityFactor/perCluster)
+}
+
+export function calcArchPerimeter(arch) {
+  const {type,width:w,height:h,coverage} = arch
+  if (type==='round') {
+    const r={full:1,'1h':0.5,'1/2h':0.25,'1/3h':0.17}
+    return Math.PI*w*(r[coverage]||0.5)
+  }
+  if (type==='rect') {
+    const fn={full:(h,w)=>2*h+w,'2h':(h)=>2*h,'1h':(h)=>h,'1/2h':(h)=>h/2,'1/3h':(h)=>h/3,'1w':(_,w)=>w,'1/2w':(_,w)=>w/2,'1/3w':(_,w)=>w/3}
+    return (fn[coverage]||fn.full)(h,w)
+  }
+  const a=w/2,b=h/2
+  const full=Math.PI*(3*(a+b)-Math.sqrt((3*a+b)*(a+3*b)))
+  const r={full:1,'2h':0.5,'1h':0.35,'1/2h':0.25,'1/3h':0.17,'1w':0.25,'1/2w':0.15,'1/3w':0.1}
+  return full*(r[coverage]||0.5)
+}
+
+export function DateInput({value,onChange,style}) {
+  const toDisp = v => v?v.split('-').reverse().join('.'):'';
+  const [raw,setRaw] = React.useState(toDisp(value))
+  React.useEffect(()=>{setRaw(toDisp(value))},[value])
+  const handle = e => {
+    let v=e.target.value.replace(/[^0-9.]/g,'')
+    if (v.length===2&&!v.includes('.')&&raw.length<v.length) v+='.'
+    if (v.length===5&&v.split('.').length===2&&raw.length<v.length) v+='.'
+    setRaw(v)
+    const p=v.split('.')
+    if (p.length===3&&p[2].length===4) {
+      const iso=`${p[2]}-${p[1].padStart(2,'0')}-${p[0].padStart(2,'0')}`
+      if (!isNaN(new Date(iso).getTime())) onChange(iso)
+    }
+  }
+  return <input style={style} value={raw} onChange={handle} placeholder="дд.мм.гггг" maxLength={10} inputMode="numeric" />
+}
+
+export function TimeInput({value,onChange,style}) {
+  const [raw,setRaw] = React.useState(value||'')
+  React.useEffect(()=>{setRaw(value||'')},[value])
+  const handle = e => {
+    let v=e.target.value.replace(/[^0-9:]/g,'')
+    if (v.length===2&&!v.includes(':')&&raw.length<v.length) v+=':'
+    setRaw(v)
+    if (/^\d{2}:\d{2}$/.test(v)) {
+      const [h,m]=v.split(':').map(Number)
+      if (h<=23&&m<=59) onChange(v)
+    }
+  }
+  return <input style={style} value={raw} onChange={handle} placeholder="чч:мм" maxLength={5} inputMode="numeric" />
+}
