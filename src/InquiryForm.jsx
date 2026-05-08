@@ -90,10 +90,19 @@ export default function InquiryForm({ onClose }) {
           <div><Lbl>Тема на украсата</Lbl><input style={inp} placeholder="напр. Принцеси, Морска, Минималистична..." value={form.event_theme} onChange={e => set('event_theme', e.target.value)} /></div>
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 12, marginBottom: 12 }}>
-          <div><Lbl>Дата *</Lbl><input style={inp} type="date" value={form.event_date} onChange={e => set('event_date', e.target.value)} /></div>
-          <div><Lbl>Начален час</Lbl><input style={inp} type="time" value={form.event_start} onChange={e => set('event_start', e.target.value)} /></div>
+          <div><Lbl>Дата *</Lbl><input style={inp} placeholder="дд.мм.гггг" maxLength={10} value={form.event_date} onChange={e => {
+  let v = e.target.value.replace(/[^0-9.]/g,'')
+  if (v.length === 2 && !v.includes('.')) v += '.'
+  if (v.length === 5 && v.split('.').length === 2) v += '.'
+  set('event_date', v)
+}} /></div>
+          <div><Lbl>Начален час</Lbl><input style={inp} placeholder="чч:мм" maxLength={5} value={form.event_start} onChange={e => {
+  let v = e.target.value.replace(/[^0-9:]/g,'')
+  if (v.length === 2 && !v.includes(':')) v += ':'
+  set('event_start', v)
+}} /></div>
           <div><Lbl>Брой гости</Lbl><input style={inp} type="number" placeholder="50" value={form.guest_count} onChange={e => set('guest_count', e.target.value)} /></div>
-          <div><Lbl>Бюджет (лв.)</Lbl><input style={inp} type="number" placeholder="500" value={form.budget} onChange={e => set('budget', e.target.value)} /></div>
+          <div><Lbl>Бюджет (€)</Lbl><input style={inp} type="number" placeholder="500" value={form.budget} onChange={e => set('budget', e.target.value)} /></div>
         </div>
         <div><Lbl>Локация</Lbl><input style={inp} placeholder="Зала, адрес, град..." value={form.location} onChange={e => set('location', e.target.value)} /></div>
       </div>
