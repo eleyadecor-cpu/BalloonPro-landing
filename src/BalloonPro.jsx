@@ -116,11 +116,53 @@ function buildCalc(state) {
   const price      = margin > 0 ? costTotal / (1 - margin / 100) : costTotal
 
   return {
+    // Timeline — монтаж
+  const setupTL = []
+  if (state.eventStart) {
+    const { addMins } = require ? {} : {}
+  }
+
+  // Aliases за BPResult
+  const matCost   = matTotal
+  const totalCost = costTotal
+  const salePrice = price
+  const tSign     = signs.reduce((s, sg) => s + (sg.timeMin || 0) * 60, 0)
+  const tCustExtra= customRates.reduce((s, r) => s + (r.timeMin || 0) * 60, 0)
+  const tAssembly = tOnsite
+  const tPrep     = (state.setupMinFixed || 15) * 60
+  const tTotal    = tInflate + tFoil + tOnsite + tDismantle + (state.travelMin || 0) * 2 * 60
+
+  const buildTL = (startTime, date) => {
+    if (!startTime) return []
+    const rows = []
+    let cur = startTime
+    const add = (label, secs, note = '') => {
+      rows.push({ time: cur, label, note })
+      const [h, m] = cur.split(':').map(Number)
+      let total = h * 60 + m + Math.ceil(secs / 60)
+      total = ((total % 1440) + 1440) % 1440
+      cur = `${String(Math.floor(total / 60)).padStart(2, '0')}:${String(total % 60).padStart(2, '0')}`
+    }
+    if (state.travelMin) add('🚗 Тръгване', state.travelMin * 60, `${state.travelKm} км`)
+    add('📦 Разопаковане', (state.setupMinFixed || 15) * 60)
+    if (!state.inflateOnSite) add('🎈 Надуване', tInflate + tFoil)
+    add('📍 Монтаж', tAttach, `${clusters} букета`)
+    if (state.hasPhotoTime) add('📸 Снимки', (state.photoTime || 10) * 60)
+    rows.push({ time: cur, label: '✅ Готово', note: '' })
+    return rows
+  }
+
+  const setupTL2 = buildTL(state.eventStart, state.eventDate)
+  const dismTL   = buildTL(state.dismSameDay ? state.eventEnd : state.dismTime, state.dismSameDay ? state.eventDate : state.dismDate)
+
+  return {
     clusters, clustersPerColor, colorCounts, accentCounts,
     tInflate, tFoil, tOnsite, tDismantle, tAttach,
+    tSign, tCustExtra, tAssembly, tPrep, tTotal,
     lInfl, lInst, lDism, lTrans, fuelCost, amortCost,
-    matBalloons, matAccents, matFoil, matSigns, matCustom, matTotal,
-    laborTotal, costTotal, price,
+    matBalloons, matAccents, matFoil, matSigns, matCustom,
+    matTotal, matCost, laborTotal, costTotal, totalCost, price, salePrice,
+    setupTL: setupTL2, dismTL,
   }
 }
 
@@ -144,7 +186,7 @@ export default function BalloonPro() {
     <BPServices state={state} set={set} calc={calc} summaryData={summaryData} />,
     <BPEvent    state={state} set={set} calc={calc} summaryData={summaryData} />,
     <BPRates    state={state} set={set} calc={calc} summaryData={summaryData} />,
-    <BPResult   state={state} set={set} calc={calc} summaryData={summaryData} />,
+    <BPResult state={state} set={set} setSt={setState} calc={calc} summaryData={summaryData} />,
   ]
 
   const steps = ['1. Основа', '2. Цветове', '3. Акценти', '4. Услуги', '5. Локация', '6. Цени', '7. Финал']
