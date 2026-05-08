@@ -194,6 +194,7 @@ export default function BalloonPro() {
           </button>
         ))}
       </div>
+
       <div style={{ background: 'white', borderRadius: '20px', padding: '20px', border: '1px solid #eee' }}>
         {PAGES[step]}
       </div>
@@ -211,11 +212,9 @@ export default function BalloonPro() {
           }}>
           ← Назад
         </button>
-
         <span style={{ fontSize: '12px', color: C.gray, alignSelf: 'center' }}>
           {step + 1} / {steps.length}
         </span>
-
         <button
           onClick={() => setStep(s => Math.min(steps.length - 1, s + 1))}
           disabled={step === steps.length - 1}
@@ -228,8 +227,6 @@ export default function BalloonPro() {
           }}>
           Напред →
         </button>
-      </div>
-        {PAGES[step]}
       </div>
     </div>
   )
