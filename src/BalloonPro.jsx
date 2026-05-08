@@ -194,7 +194,7 @@ export default function BalloonPro() {
           </button>
         ))}
       </div>
-      <<div style={{ background: 'white', borderRadius: '20px', padding: '20px', border: '1px solid #eee' }}>
+      <div style={{ background: 'white', borderRadius: '20px', padding: '20px', border: '1px solid #eee' }}>
         {PAGES[step]}
       </div>
 
