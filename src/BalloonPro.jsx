@@ -194,7 +194,41 @@ export default function BalloonPro() {
           </button>
         ))}
       </div>
-      <div style={{ background: 'white', borderRadius: '20px', padding: '20px', border: '1px solid #eee' }}>
+      <<div style={{ background: 'white', borderRadius: '20px', padding: '20px', border: '1px solid #eee' }}>
+        {PAGES[step]}
+      </div>
+
+      <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '16px' }}>
+        <button
+          onClick={() => setStep(s => Math.max(0, s - 1))}
+          disabled={step === 0}
+          style={{
+            padding: '12px 24px', borderRadius: '12px', border: 'none',
+            background: step === 0 ? '#eee' : C.l200,
+            color: step === 0 ? '#bbb' : C.l700,
+            cursor: step === 0 ? 'default' : 'pointer',
+            fontWeight: '700', fontSize: '13px'
+          }}>
+          ← Назад
+        </button>
+
+        <span style={{ fontSize: '12px', color: C.gray, alignSelf: 'center' }}>
+          {step + 1} / {steps.length}
+        </span>
+
+        <button
+          onClick={() => setStep(s => Math.min(steps.length - 1, s + 1))}
+          disabled={step === steps.length - 1}
+          style={{
+            padding: '12px 24px', borderRadius: '12px', border: 'none',
+            background: step === steps.length - 1 ? '#eee' : C.l600,
+            color: step === steps.length - 1 ? '#bbb' : '#fff',
+            cursor: step === steps.length - 1 ? 'default' : 'pointer',
+            fontWeight: '700', fontSize: '13px'
+          }}>
+          Напред →
+        </button>
+      </div>
         {PAGES[step]}
       </div>
     </div>
