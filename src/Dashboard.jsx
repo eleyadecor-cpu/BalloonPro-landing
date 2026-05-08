@@ -1,26 +1,26 @@
 import React from 'react';
 
 const Dashboard = () => {
-  // Дефиниране на бутоните според твоята палитра
+  // Твоите нови 5 бутона с цветове точно от последната палитра
   const quickActions = [
-    { label: 'Нова поръчка', icon: '➕', bg: '#312A44', text: '#D7C5D2' }, // Midnight Orchid
-    { label: 'Склад', icon: '🎈', bg: '#88703E', text: '#DAD4DF' },        // Dusky Lilac
-    { label: 'Клиенти', icon: '👤', bg: '#BAB0C8', text: '#312A44' },      // Iris Mist
-    { label: 'Календар', icon: '📅', bg: '#D7C5D2', text: '#312A44' },      // Plum Blossom
-    { label: 'Настройки', icon: '⚙️', bg: '#DAD4DF', text: '#88703E' }       // Silver Wisteria
+    { label: 'Нова поръчка', icon: '➕', bg: '#735377', text: '#f8ecff' },
+    { label: 'Склад', icon: '🎈', bg: '#a989ab', text: '#312A44' },
+    { label: 'Клиенти', icon: '👤', bg: '#cebedc', text: '#312A44' },
+    { label: 'Календар', icon: '📅', bg: '#d9cde4', text: '#735377' },
+    { label: 'Настройки', icon: '⚙️', bg: '#f8ecff', text: '#735377' }
   ];
 
   return (
-    <div className="page-container" style={{ padding: '30px', backgroundColor: '#fcfaff', minHeight: '100vh' }}>
+    <div className="page-container" style={{ padding: '30px', backgroundColor: '#fcfaff', minHeight: '100vh', fontFamily: 'system-ui, sans-serif' }}>
       
-      {/* HEADER СЪС ЗАГЛАВИЕ И ВРЕМЕ */}
-      <header style={{ marginBottom: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+      {/* 1. HEADER */}
+      <header style={{ marginBottom: '30px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '20px' }}>
         <div>
           <h1 style={{ color: '#312A44', fontSize: '28px', margin: 0, fontWeight: '800' }}>Здравей, Balloon Pro! ✨</h1>
           <p style={{ color: '#888', marginTop: '5px' }}>Твоят команден център е готов.</p>
           
-          {/* СИНЯТА СТРЕЛКА: Твоите нови дискретни бутони */}
-          <div style={{ display: 'flex', gap: '10px', marginTop: '15px', flexWrap: 'wrap' }}>
+          {/* БЪРЗИ БУТОНИ (Под заглавието) */}
+          <div style={{ display: 'flex', gap: '10px', marginTop: '20px', flexWrap: 'wrap' }}>
             {quickActions.map((action) => (
               <button 
                 key={action.label}
@@ -28,62 +28,89 @@ const Dashboard = () => {
                   display: 'flex',
                   alignItems: 'center',
                   gap: '8px',
-                  padding: '8px 16px',
+                  padding: '10px 18px',
                   backgroundColor: action.bg,
                   color: action.text,
                   border: 'none',
-                  borderRadius: '8px',
-                  fontSize: '13px',
-                  fontWeight: '600',
+                  borderRadius: '10px',
+                  fontSize: '14px',
+                  fontWeight: '700',
                   cursor: 'pointer',
-                  transition: 'opacity 0.2s'
+                  boxShadow: '0 2px 5px rgba(0,0,0,0.05)',
+                  transition: 'transform 0.2s'
                 }}
-                onMouseOver={(e) => e.currentTarget.style.opacity = '0.9'}
-                onMouseOut={(e) => e.currentTarget.style.opacity = '1'}
+                onMouseOver={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
+                onMouseOut={(e) => e.currentTarget.style.transform = 'translateY(0)'}
               >
-                <span style={{ fontSize: '14px' }}>{action.icon}</span>
+                <span>{action.icon}</span>
                 {action.label}
               </button>
             ))}
           </div>
         </div>
-
-        {/* Weather Widget */}
-        <div className="weather-card" style={{ backgroundColor: 'white', padding: '15px 25px', borderRadius: '20px', boxShadow: '0 4px 15px rgba(0,0,0,0.05)' }}>
-          <div style={{ fontSize: '11px', opacity: 0.6, fontWeight: 700, textTransform: 'uppercase' }}>Прогноза за декорация</div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginTop: '10px' }}>
-            <span style={{ fontSize: '32px' }}>☀️</span>
+        
+        {/* Weather Widget (С подобрена видимост на текста) */}
+        <div className="weather-card" style={{ 
+          backgroundColor: '#312A44', // Midnight Orchid от твоята палитра
+          padding: '20px 30px', 
+          borderRadius: '24px', 
+          boxShadow: '0 10px 20px rgba(0,0,0,0.1)',
+          minWidth: '250px'
+        }}>
+          <div style={{ fontSize: '11px', color: '#cebedc', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '1px' }}>
+            Прогноза за декорация
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginTop: '12px' }}>
+            <span style={{ fontSize: '35px' }}>☀️</span>
             <div>
-              <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#312A44' }}>22°C</div>
-              <div style={{ fontSize: '12px', color: '#666' }}>София (Идеално време)</div>
+              <div style={{ fontSize: '28px', fontWeight: 'bold', color: 'white' }}>22°C</div>
+              <div style={{ fontSize: '13px', color: '#d9cde4' }}>София (Идеално време)</div>
             </div>
           </div>
         </div>
       </header>
 
-      {/* КАРТИ СЪС СТАТИСТИКИ (Старият дизайн) */}
-      <div style={{ display: 'flex', gap: '20px', marginBottom: '30px' }}>
+      {/* 2. СТАТИСТИКИ (Карти) */}
+      <div style={{ display: 'flex', gap: '20px', marginBottom: '30px', flexWrap: 'wrap' }}>
         {['СЛЕДВАЩИ СЪБИТИЯ', 'ЗАДАЧИ ЗА ДНЕС', 'НАЛИЧЕН ИНВЕНТАР'].map(title => (
-          <div key={title} style={{ backgroundColor: 'white', padding: '25px', borderRadius: '16px', flex: 1, boxShadow: '0 2px 4px rgba(0,0,0,0.02)', border: '1px solid #f0f0f0' }}>
-            <div style={{ fontSize: '11px', fontWeight: 700, color: '#aaa', marginBottom: '10px' }}>{title}</div>
+          <div key={title} style={{ 
+            backgroundColor: 'white', 
+            padding: '25px', 
+            borderRadius: '20px', 
+            flex: '1', 
+            minWidth: '200px',
+            boxShadow: '0 4px 6px rgba(0,0,0,0.02)',
+            border: '1px solid #f0f0f0'
+          }}>
+            <div style={{ fontSize: '11px', fontWeight: 800, color: '#aaa', marginBottom: '10px' }}>{title}</div>
             <div style={{ fontSize: '48px', fontWeight: 'bold', color: '#312A44' }}>0</div>
           </div>
         ))}
       </div>
 
-      {/* СЕКЦИИ СЪС ЗАДАЧИ (Старият дизайн) */}
-      <div style={{ display: 'flex', gap: '20px' }}>
-        <div style={{ backgroundColor: 'white', padding: '25px', borderRadius: '16px', flex: 2, boxShadow: '0 2px 4px rgba(0,0,0,0.02)', border: '1px solid #f0f0f0' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: '#312A44', fontWeight: 'bold' }}>
-            <span>📅</span> Предстоящи монтажи
+      {/* 3. СЕКЦИИ */}
+      <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap' }}>
+        <div style={{ backgroundColor: 'white', padding: '30px', borderRadius: '24px', flex: '2', minWidth: '300px', border: '1px solid #f0f0f0' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: '#312A44', fontWeight: '800', fontSize: '18px' }}>
+            <span style={{ fontSize: '22px' }}>📅</span> Предстоящи монтажи
           </div>
-          <p style={{ color: '#aaa', marginTop: '15px' }}>Няма предстоящи събития.</p>
+          <p style={{ color: '#aaa', marginTop: '20px' }}>Няма предстоящи събития за днес.</p>
         </div>
-        <div style={{ backgroundColor: 'white', padding: '25px', borderRadius: '16px', flex: 1, boxShadow: '0 2px 4px rgba(0,0,0,0.02)', border: '1px solid #f0f0f0' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: '#312A44', fontWeight: 'bold' }}>
-            <span>✅</span> Задачи
+        
+        <div style={{ backgroundColor: 'white', padding: '30px', borderRadius: '24px', flex: '1', minWidth: '250px', border: '1px solid #f0f0f0' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: '#312A44', fontWeight: '800', fontSize: '18px' }}>
+            <span style={{ fontSize: '22px' }}>✅</span> Задачи
           </div>
-          <div style={{ marginTop: '15px', padding: '10px', border: '1px dashed #ddd', borderRadius: '8px', textAlign: 'center', color: '#88703E', fontSize: '13px' }}>
+          <div style={{ 
+            marginTop: '20px', 
+            padding: '15px', 
+            border: '2px dashed #eee', 
+            borderRadius: '12px', 
+            textAlign: 'center', 
+            color: '#a989ab', 
+            cursor: 'pointer',
+            fontWeight: '600'
+          }}>
             + Нова задача
           </div>
         </div>
