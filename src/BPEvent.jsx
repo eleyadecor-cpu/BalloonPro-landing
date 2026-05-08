@@ -14,7 +14,7 @@ function SummaryBar({data}) {
   )
 }
 
-export default function BPEvent({state, set, calc, summaryData}) {
+export default function BPEvent({state, set, summaryData}) {
   const {
     inflateOnSite, travelKm, location, distError,
     eventDate, eventStart, eventEnd, 
@@ -27,7 +27,6 @@ export default function BPEvent({state, set, calc, summaryData}) {
     <div style={{paddingTop: 2}}>
       <SummaryBar data={summaryData} />
 
-      {/* 1. ЛОКАЦИЯ С GOOGLE MAPS */}
       <div style={S}>
         <MapComponent 
           address={location} 
@@ -41,13 +40,12 @@ export default function BPEvent({state, set, calc, summaryData}) {
           <input 
             type="number" 
             style={inp} 
-            value={travelKm} 
+            value={travelKm || ''} 
             onChange={e => set('travelKm', +e.target.value)} 
           />
         </div>
       </div>
 
-      {/* 2. ВРЕМЕВА РАМКА */}
       <div style={S}>
         <div style={{display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:10}}>
           <div><Lbl>Дата</Lbl><DateInput style={inp} value={eventDate} onChange={v=>set('eventDate',v)} /></div>
@@ -56,12 +54,11 @@ export default function BPEvent({state, set, calc, summaryData}) {
         </div>
       </div>
 
-      {/* 3. ДЕМОНТАЖ */}
       <div style={S}>
-        <div style={{fontSize:11, fontWeight:700, color:C.l400, marginBottom:12, textTransform:'uppercase'}}>Демонтаж</div>
+        <div style={{fontSize:11, fontWeight:700, color:C.l600, marginBottom:12, textTransform:'uppercase'}}>Демонтаж</div>
         <div style={{display:'flex', gap:8, marginBottom:12}}>
-          <button style={pillLight(dismSameDay, C.l400)} onClick={() => set('dismSameDay', true)}>Веднага след края</button>
-          <button style={pillLight(!dismSameDay, C.l400)} onClick={() => set('dismSameDay', false)}>Друг ден/час</button>
+          <button style={pillLight(dismSameDay, C.l600)} onClick={() => set('dismSameDay', true)}>Веднага</button>
+          <button style={pillLight(!dismSameDay, C.l600)} onClick={() => set('dismSameDay', false)}>Друг ден</button>
         </div>
         {!dismSameDay && (
           <div style={{display:'grid', gridTemplateColumns:'1fr 1fr', gap:12}}>
