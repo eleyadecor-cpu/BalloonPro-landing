@@ -118,6 +118,29 @@ export default function BPEvent({state, set, calc, summaryData}) {
           <div><Lbl>Край</Lbl><TimeInput style={inp} value={eventEnd} onChange={v => set('eventEnd', v)} /></div>
         </div>
 
+        <div style={{borderTop: `1px solid ${C.l50}`, paddingTop: 15, marginBottom: 15}}>
+          <div style={{fontSize:11, fontWeight:700, color:C.l600, marginBottom:12}}>⏱ Добра времева практика</div>
+          <Lbl>Започни по-рано с (резерв преди старт)</Lbl>
+          <div style={{display:'flex', gap:6, flexWrap:'wrap', marginBottom:4}}>
+            {[0,5,10,15,20,30].map(m=>(
+              <button key={m} style={pillLight(state.bufferBefore===m, C.l600)} onClick={()=>set('bufferBefore',m)}>
+                {m===0?'Без':m+' мин'}
+              </button>
+            ))}
+          </div>
+          <div style={{fontSize:9, color:C.gray, marginBottom:12}}>Буфер за непредвидени ситуации</div>
+
+          <Lbl>Завърши декора X мин преди събитието</Lbl>
+          <div style={{display:'flex', gap:6, flexWrap:'wrap', marginBottom:4}}>
+            {[0,5,10,15,20,30].map(m=>(
+              <button key={m} style={pillLight(state.bufferFinish===m, C.l600)} onClick={()=>set('bufferFinish',m)}>
+                {m===0?'Без':m+' мин'}
+              </button>
+            ))}
+          </div>
+          <div style={{fontSize:9, color:C.gray, marginBottom:12}}>Декорът е готов преди гостите да пристигнат</div>
+        </div>
+
         <div style={{borderTop: `1px solid ${C.l50}`, paddingTop: 15}}>
           <Lbl>📸 Снимки на готовия декор</Lbl>
           <div style={{display:'flex', gap:6, flexWrap:'wrap'}}>
