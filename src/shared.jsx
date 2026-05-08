@@ -26,5 +26,6 @@ export const BALLOON_SIZES = [
   { inch: 12, cm: 30, timeMin: 0.25 },
   { inch: 18, cm: 45, timeMin: 0.6 },
   { inch: 36, cm: 90, timeMin: 1.5 }
-export const MANUFACTURERS = ['Kalisan', 'Gemar', 'Qualatex', 'Sempertex', 'Tuftex', 'Друг'];  
 ];
+
+export const MANUFACTURERS = ['Kalisan', 'Gemar', 'Qualatex', 'Sempertex', 'Tuftex', 'Друг'];  
