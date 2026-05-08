@@ -267,11 +267,21 @@ export default function BPResult({state, set, setSt, calc}) {
             </div>
           )
         })}
+
+        {foilBalloons.length > 0 && (
+          <div style={{marginTop:8}}>
+            {foilBalloons.map((fb,fi)=>(
+              <div key={fi} style={{display:'flex',justifyContent:'space-between',fontSize:12,padding:'8px 12px',background:'#fffbf0',border:'1px solid #f0e8c0',marginBottom:6}}>
+                <span style={{fontWeight:600}}>✨ {fb.name||fb.label||fb.inch+'"'}</span>
+                <span>{fb.qty} бр · {(fb.qty*(fb.timeMin||2)).toFixed(0)} мин · <strong>€{(fb.qty*(fb.price||0)).toFixed(2)}</strong></span>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       <div style={{background:'#fff',border:`1px solid ${C.l100}`,padding:'18px 20px',marginBottom:2}}>
         <div style={{fontSize:10,fontWeight:600,textTransform:'uppercase',color:C.l500,letterSpacing:'1px',marginBottom:14}}>Timeline — монтаж</div>
-        {setupTL.length > 0 ? setupTL.map((row,i)=><TL key={i} row={row} last={i===setupTL.length-1} />) : <div style={{fontSize:11,color:C.gray}}>Въведи начален час в таб Локация</div>}
       </div>
 
       {dismTL.length > 0 && (
