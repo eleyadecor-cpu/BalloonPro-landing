@@ -1,6 +1,19 @@
 import React, { useEffect } from 'react'
 import { C, BALLOON_SIZES, DENSITY, fmt, addMins } from './shared.jsx'
 import { supabase } from './supabaseClient'
+function TL({row, last}) {
+  return (
+    <div style={{display:'flex',gap:12,alignItems:'flex-start',marginBottom:last?0:8}}>
+      <div style={{minWidth:54,padding:'5px 8px',background:last?C.l700:'#fff',border:`1px solid ${C.l100}`,textAlign:'center',fontSize:12,fontWeight:700,color:last?'#fff':C.l700,flexShrink:0}}>
+        {row.time}
+      </div>
+      <div style={{flex:1,paddingTop:4}}>
+        <div style={{fontSize:12,fontWeight:600}}>{row.label}</div>
+        {row.note && <div style={{fontSize:10,color:C.gray,marginTop:2}}>{row.note}</div>}
+      </div>
+    </div>
+  )
+}
 
 export default function BPResult({state, set, setSt, calc}) {
   const {colorEntries, numColors, accents, foilBalloons, signs, customRates, rates, margin, inflateOnSite, location, hasPhotoTime, photoTime, bufferFinish, bufferBefore, travelMin, travelKm, fuelPerLiter, fuelPer100km, amortPerKm, eventDate, eventStart, eventEnd, dismSameDay, dismDate, dismTime} = state
@@ -258,8 +271,15 @@ export default function BPResult({state, set, setSt, calc}) {
 
       <div style={{background:'#fff',border:`1px solid ${C.l100}`,padding:'18px 20px',marginBottom:2}}>
         <div style={{fontSize:10,fontWeight:600,textTransform:'uppercase',color:C.l500,letterSpacing:'1px',marginBottom:14}}>Timeline — монтаж</div>
-        {setupTL.map((row,i)=><TL key={i} row={row} last={i===setupTL.length-1} />)}
+        {setupTL.length > 0 ? setupTL.map((row,i)=><TL key={i} row={row} last={i===setupTL.length-1} />) : <div style={{fontSize:11,color:C.gray}}>Въведи начален час в таб Локация</div>}
       </div>
+
+      {dismTL.length > 0 && (
+        <div style={{background:'#fff',border:`1px solid ${C.l100}`,padding:'18px 20px',marginBottom:2}}>
+          <div style={{fontSize:10,fontWeight:600,textTransform:'uppercase',color:C.l500,letterSpacing:'1px',marginBottom:14}}>Timeline — демонтаж</div>
+          {dismTL.map((row,i)=><TL key={i} row={row} last={i===dismTL.length-1} />)}
+        </div>
+      )}
 
       <div style={{background:'#fff',border:`1px solid ${C.l100}`,padding:'18px 20px',marginBottom:2}}>
         <div style={{fontSize:10,fontWeight:600,textTransform:'uppercase',color:C.l500,letterSpacing:'1px',marginBottom:12}}>Ценова калкулация</div>
