@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import BalloonPro from './BalloonPro.jsx';
+import InquiryForm from './InquiryForm.jsx';
 
 const DAYS = ['П', 'В', 'С', 'Ч', 'П', 'С', 'Н'];
 const MONTHS = ['Януари','Февруари','Март','Април','Май','Юни','Юли','Август','Септември','Октомври','Ноември','Декември'];
 
 const Dashboard = () => {
   const [isCalcOpen, setIsCalcOpen] = useState(false);
+  const [isInquiryOpen, setIsInquiryOpen] = useState(false);
   const [weather, setWeather] = useState(null);
   const today = new Date();
 
@@ -36,7 +38,7 @@ const Dashboard = () => {
   const daysInMonth = new Date(year, month + 1, 0).getDate();
 
   const allActions = [
-    { label: '+ Запитване', icon: '📝', bg: '#735377', text: '#f8ecff' },
+    { label: '+ Запитване', icon: '📝', bg: '#735377', text: '#f8ecff', action: () => setIsInquiryOpen(true) },
     { label: 'Калкулатор', icon: '🎈', bg: '#a989ab', text: '#312A44', action: () => setIsCalcOpen(true) },
     { label: 'Календар', icon: '📅', bg: '#cebedc', text: '#312A44' },
     { label: '+ Оферта', icon: '📄', bg: '#d9cde4', text: '#735377' },
@@ -148,6 +150,20 @@ const Dashboard = () => {
             </div>
             <div style={{ padding: '40px' }}>
               <BalloonPro />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {isInquiryOpen && (
+        <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', backgroundColor: 'rgba(49,42,68,0.7)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000, padding: '20px' }}>
+          <div style={{ backgroundColor: '#fcfaff', borderRadius: '32px', width: '90%', maxWidth: '800px', maxHeight: '90vh', overflowY: 'auto', position: 'relative', boxShadow: '0 30px 60px rgba(0,0,0,0.4)' }}>
+            <div style={{ padding: '20px 40px', borderBottom: '1px solid #eee', display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: 'white', borderTopLeftRadius: '32px', borderTopRightRadius: '32px' }}>
+              <h2 style={{ color: '#312A44', fontWeight: '900', margin: 0 }}>📝 Ново Запитване</h2>
+              <button onClick={() => setIsInquiryOpen(false)} style={{ border: 'none', background: '#eee', borderRadius: '50%', width: '40px', height: '40px', cursor: 'pointer', fontSize: '20px' }}>✕</button>
+            </div>
+            <div style={{ padding: '20px 40px 40px' }}>
+              <InquiryForm onClose={() => setIsInquiryOpen(false)} />
             </div>
           </div>
         </div>
