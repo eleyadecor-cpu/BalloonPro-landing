@@ -18,7 +18,6 @@ export default function BPEvent({state, set, calc, summaryData}) {
   const {
     inflateOnSite, travelKm, location, distError,
     eventDate, eventStart, eventEnd, 
-    hasPhotoTime, photoTime, 
     dismSameDay, dismDate, dismTime
   } = state
 
@@ -59,10 +58,10 @@ export default function BPEvent({state, set, calc, summaryData}) {
 
       {/* 3. ДЕМОНТАЖ */}
       <div style={S}>
-        <div style={{fontSize:11, fontWeight:700, color:C.l600, marginBottom:12, textTransform:'uppercase'}}>Демонтаж</div>
+        <div style={{fontSize:11, fontWeight:700, color:C.l400, marginBottom:12, textTransform:'uppercase'}}>Демонтаж</div>
         <div style={{display:'flex', gap:8, marginBottom:12}}>
-          <button style={pillLight(dismSameDay, C.l600)} onClick={() => set('dismSameDay', true)}>Веднага след края</button>
-          <button style={pillLight(!dismSameDay, C.l600)} onClick={() => set('dismSameDay', false)}>Друг ден/час</button>
+          <button style={pillLight(dismSameDay, C.l400)} onClick={() => set('dismSameDay', true)}>Веднага след края</button>
+          <button style={pillLight(!dismSameDay, C.l400)} onClick={() => set('dismSameDay', false)}>Друг ден/час</button>
         </div>
         {!dismSameDay && (
           <div style={{display:'grid', gridTemplateColumns:'1fr 1fr', gap:12}}>
