@@ -21,6 +21,7 @@ export default function InquiryList({ onOpenCalc }) {
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState('all')
   const [selected, setSelected] = useState(null)
+  const [isEditing, setIsEditing] = useState(false)
 
   useEffect(() => { load() }, [])
 
@@ -119,15 +120,18 @@ export default function InquiryList({ onOpenCalc }) {
           </div>
 
           {/* ДЕЙСТВИЯ */}
-          <div style={{ display:'flex', flexDirection:'column', gap:8 }}>
-            <button onClick={() => { onOpenCalc(selected); setSelected(null) }} style={{ padding:13, background:'#F3A2BE', color:'#fff', border:'none', borderRadius:14, fontWeight:800, cursor:'pointer', fontSize:13 }}>
-              🎈 Отвори в Калкулатора
+          <div style={{ display:'flex', flexDirection:'row', gap:8 }}>
+            <button onClick={() => setIsEditing(true)} style={{ flex:1, padding:'10px 6px', background:'#C6E6E3', color:'#2a5450', border:'none', borderRadius:14, fontWeight:800, cursor:'pointer', fontSize:11, textAlign:'center' }}>
+              ✏️ Редактирай
             </button>
-            <button style={{ padding:13, background:'rgba(255,255,255,0.8)', color:'#81BFB7', border:'1px solid #C6E6E3', borderRadius:14, fontWeight:800, cursor:'pointer', fontSize:13 }}>
-              📄 Бърза Оферта
+            <button onClick={() => { onOpenCalc(selected); setSelected(null) }} style={{ flex:1, padding:'10px 6px', background:'#F3A2BE', color:'#fff', border:'none', borderRadius:14, fontWeight:800, cursor:'pointer', fontSize:11, textAlign:'center' }}>
+              🎈 Калкулатор
             </button>
-            <button onClick={() => deleteInquiry(selected.id)} style={{ padding:13, background:'#FFD3DD', color:'#c0392b', border:'none', borderRadius:14, fontWeight:800, cursor:'pointer', fontSize:13 }}>
-              🗑️ Изтрий запитването
+            <button style={{ flex:1, padding:'10px 6px', background:'rgba(255,255,255,0.8)', color:'#81BFB7', border:'1px solid #C6E6E3', borderRadius:14, fontWeight:800, cursor:'pointer', fontSize:11, textAlign:'center' }}>
+              📄 Оферта
+            </button>
+            <button onClick={() => deleteInquiry(selected.id)} style={{ flex:1, padding:'10px 6px', background:'#FFD3DD', color:'#c0392b', border:'none', borderRadius:14, fontWeight:800, cursor:'pointer', fontSize:11, textAlign:'center' }}>
+              🗑️ Изтрий
             </button>
           </div>
         </div>
