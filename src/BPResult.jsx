@@ -46,8 +46,8 @@ export default function BPResult({state, set, setSt, calc}) {
     const typeLabel = state.decorType==='garland'?'Гирлянд':'Арка'
     const densLabel = DENSITY[state.density]?.label||state.density
 
-    const tlRows = calc.setupTL?.map(r=>`<tr><td><strong>${r.time}</strong></td><td>${r.label}</td><td style="color:#7a7490;font-size:11px">${r.note||''}</td></tr>`).join('')||''
-    const dismTlRows = calc.dismTL?.map(r=>`<tr><td><strong>${r.time}</strong></td><td>${r.label}</td><td style="color:#7a7490;font-size:11px">${r.note||''}</td></tr>`).join('')||''
+    const tlRows = calc.setupTL?.map(r=>`<tr><td><strong>${r.time}</strong></td><td>${r.label}</td><td style="color:#81BFB7;font-size:11px">${r.note||''}</td></tr>`).join('')||''
+    const dismTlRows = calc.dismTL?.map(r=>`<tr><td><strong>${r.time}</strong></td><td>${r.label}</td><td style="color:#81BFB7;font-size:11px">${r.note||''}</td></tr>`).join('')||''
 
     const colorRows = colorEntries.slice(0,numColors).map((ce,i)=>{
       const cc=calc.colorCounts[i]||{}
@@ -81,42 +81,42 @@ export default function BPResult({state, set, setSt, calc}) {
     const html = `<!DOCTYPE html><html><head><meta charset="UTF-8">
     <title>BalloonPro — Калкулация</title>
     <style>
-      body{font-family:'Segoe UI',Arial,sans-serif;color:#221255;margin:0;padding:0;font-size:12px;}
-      .header{background:#4e3580;color:#fff;padding:18px 24px;display:flex;justify-content:space-between;align-items:flex-start;}
+      body{font-family:'Segoe UI',Arial,sans-serif;color:#3a2a35;margin:0;padding:0;font-size:12px;}
+      .header{background:#81BFB7;color:#fff;padding:18px 24px;display:flex;justify-content:space-between;align-items:flex-start;}
       .header h1{margin:0;font-size:22px;font-weight:700;}
-      .header h1 span{font-style:italic;font-weight:400;color:#d4c3ed;}
-      .header-right{text-align:right;font-size:11px;color:#d4c3ed;}
+      .header h1 span{font-style:italic;font-weight:400;color:#C6E6E3;}
+      .header-right{text-align:right;font-size:11px;color:#C6E6E3;}
       .header-right strong{display:block;font-size:14px;color:#fff;}
-      .sub{background:#e8ddf5;padding:8px 24px;font-size:10px;color:#4e3580;}
+      .sub{background:#FFD3DD;padding:8px 24px;font-size:10px;color:#81BFB7;}
       .body{padding:20px 24px;}
-      .section-title{background:#e8ddf5;padding:5px 8px;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#4e3580;margin:14px 0 6px;}
+      .section-title{background:#FFD3DD;padding:5px 8px;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#81BFB7;margin:14px 0 6px;}
       table{width:100%;border-collapse:collapse;font-size:11px;}
       td{padding:4px 6px;border-bottom:1px solid #f0edf8;}
-      .total-row{background:#f5f0fb;font-weight:700;color:#4e3580;}
-      .price-row{background:#4e3580;color:#fff;font-size:14px;font-weight:700;}
+      .total-row{background:#F0F9F8;font-weight:700;color:#81BFB7;}
+      .price-row{background:#81BFB7;color:#fff;font-size:14px;font-weight:700;}
       .price-row td{padding:8px 6px;}
-      .tl-time{font-weight:700;color:#4e3580;min-width:55px;}
-      .footer{margin-top:20px;border-top:1px solid #e8ddf5;padding-top:8px;font-size:9px;color:#b89ddf;display:flex;justify-content:space-between;}
+      .tl-time{font-weight:700;color:#81BFB7;min-width:55px;}
+      .footer{margin-top:20px;border-top:1px solid #FFD3DD;padding-top:8px;font-size:9px;color:#F3A2BE;display:flex;justify-content:space-between;}
       @media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact;}}
     </style></head><body>
     <div class="header">
-      <div><h1>Balloon<span>Pro</span></h1><div style="font-size:11px;color:#d4c3ed;margin-top:4px">Калкулация № ${calcNum}</div></div>
+      <div><h1>Balloon<span>Pro</span></h1><div style="font-size:11px;color:#C6E6E3;margin-top:4px">Калкулация № ${calcNum}</div></div>
       <div class="header-right">${location?`<strong>${location}</strong>`:''}${eventDate?`<div>${formatDateStr(eventDate)}${eventStart?' · '+eventStart:''}</div>`:''}</div>
     </div>
     <div class="sub">Изчисление — ${new Date().toLocaleDateString('bg-BG')} · ${typeLabel} · ${calc.clusters} букета · ${densLabel} · ${state.garlandLen}см</div>
     <div class="body">
       <div class="section-title">Балони по цвят</div>
-      <table><thead><tr style="font-size:9px;color:#7a7490"><td>Артикул</td><td>Количество</td><td>Балони</td><td>Себестойност</td></tr></thead>
+      <table><thead><tr style="font-size:9px;color:#81BFB7"><td>Артикул</td><td>Количество</td><td>Балони</td><td>Себестойност</td></tr></thead>
       <tbody>
         ${colorRows}
         ${accentRows}
         ${foilRows}
       </tbody></table>
-      ${signsRows?`<div class="section-title">Надписи / Цветя / Допълнения</div><table><thead><tr style="font-size:9px;color:#7a7490"><td>Описание</td><td>Количество / Времетраене</td><td></td><td>Себестойност</td></tr></thead><tbody>${signsRows}</tbody></table>`:''}
+      ${signsRows?`<div class="section-title">Надписи / Цветя / Допълнения</div><table><thead><tr style="font-size:9px;color:#81BFB7"><td>Описание</td><td>Количество / Времетраене</td><td></td><td>Себестойност</td></tr></thead><tbody>${signsRows}</tbody></table>`:''}
       <div class="section-title">Ценова калкулация</div>
       <table><tbody>${costRows}
         <tr class="total-row"><td>Себестойност (общо)</td><td style="text-align:right">€${calc.totalCost.toFixed(2)}</td></tr>
-        ${margin>0?`<tr><td style="color:#7a7490">Марж (${margin}%)</td><td style="text-align:right;color:#7a7490">€${(calc.salePrice-calc.totalCost).toFixed(2)}</td></tr><tr class="price-row"><td>ЦЕНА ЗА КЛИЕНТА</td><td style="text-align:right">€${calc.salePrice.toFixed(2)}</td></tr>`:''}
+        ${margin>0?`<tr><td style="color:#81BFB7">Марж (${margin}%)</td><td style="text-align:right;color:#81BFB7">€${(calc.salePrice-calc.totalCost).toFixed(2)}</td></tr><tr class="price-row"><td>ЦЕНА ЗА КЛИЕНТА</td><td style="text-align:right">€${calc.salePrice.toFixed(2)}</td></tr>`:''}
       </tbody></table>
       <div class="section-title">Времева оценка</div>
       <table><tbody>
