@@ -41,7 +41,7 @@ const Dashboard = () => {
 
   const allActions = [
     { label: '+ Запитване', icon: '📝', bg: '#F3A2BE', text: '#fff', action: () => setIsInquiryOpen(true) },
-    { label: 'Калкулатор',  icon: '🧮', bg: '#FFD3DD', text: '#3a2a35', action: () => setIsCalcOpen(true) },
+    { label: 'Калкулатор', icon: <svg width="18" height="18" viewBox="0 0 36 36"><rect width="36" height="36" rx="10" fill="#F3A2BE" opacity="0.4"/><rect x="3" y="3" width="30" height="30" rx="8" fill="#F3A2BE" opacity="0.5"/><rect x="6" y="6" width="24" height="24" rx="6" fill="white" opacity="0.9"/><rect x="9" y="9" width="18" height="5" rx="2" fill="#F3A2BE"/><rect x="9" y="17" width="5" height="5" rx="1.5" fill="#F3A2BE"/><rect x="15.5" y="17" width="5" height="5" rx="1.5" fill="#F3A2BE"/><rect x="22" y="17" width="5" height="5" rx="1.5" fill="#F3A2BE"/><rect x="9" y="24" width="5" height="3" rx="1.5" fill="#F3A2BE"/><rect x="15.5" y="24" width="5" height="3" rx="1.5" fill="#F3A2BE"/><rect x="22" y="24" width="5" height="3" rx="1.5" fill="#81BFB7"/></svg>, bg: '#FFD3DD', text: '#3a2a35', action: () => setIsCalcOpen(true) },
     { label: 'Календар',    icon: '📅', bg: '#C6E6E3', text: '#2a5450' },
     { label: '+ Оферта',    icon: '📄', bg: '#F0F9F8', text: '#81BFB7', style: { border: '1px solid #C6E6E3' } },
     { label: 'Финанси',     icon: '💰', bg: '#F0F9F8', text: '#81BFB7', style: { border: '1px solid #C6E6E3' } },
