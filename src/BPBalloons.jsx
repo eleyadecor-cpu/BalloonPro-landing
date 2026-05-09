@@ -63,14 +63,14 @@ export default function BPBalloons({state, set, calc, summaryData}) {
                   value={ce.price} onChange={e=>updColor(i,{price:+e.target.value})} />
                 <span style={{fontSize:11,color:C.gray,whiteSpace:'nowrap'}}>€/бр</span>
               </div>
-              <div style={{fontSize:9,color:'#c0892b',marginTop:3}}>⚠️ Въвеждай себестойност (цена на покупка), не продажна цена!</div>
+              <div style={{fontSize:9,color:'#81BFB7',marginTop:3}}>⚠️ Въвеждай себестойност (цена на покупка), не продажна цена!</div>
 
               {/* Result */}
               {clusters>0 && (
                 <div style={{marginTop:12,background:C.l50,padding:'10px',borderTop:`1px solid ${C.l100}`}}>
                   <div style={{fontSize:9,color:C.gray,textTransform:'uppercase',letterSpacing:'.8px',marginBottom:4}}>резултат</div>
                   <div style={{fontSize:11,color:accent,fontWeight:600}}>{cc.cpc} букета × {ce.perCluster} бр = {cc.nr} балона</div>
-                  <div style={{fontSize:11,color:'#3d7a56',fontWeight:600}}>€{(cc.cost||0).toFixed(2)}</div>
+                  <div style={{fontSize:11,color:'#81BFB7',fontWeight:600}}>€{(cc.cost||0).toFixed(2)}</div>
                 </div>
               )}
             </div>
@@ -100,7 +100,7 @@ export default function BPBalloons({state, set, calc, summaryData}) {
               {!ce.customDiam && (
                 <div style={{marginTop:8,fontSize:10,color:C.l600,background:C.l50,padding:'5px 8px'}}>
                   📏 надут: ~{BALLOON_SIZES.find(s=>s.inch===ce.sizeInch)?.cm||ce.sizeCm}см
-                  {i===0 && <span style={{color:'#c0892b',marginLeft:6}}>← за изчисление</span>}
+                  {i===0 && <span style={{color:'#81BFB7',marginLeft:6}}>← за изчисление</span>}
                 </div>
               )}
             </div>

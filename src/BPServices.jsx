@@ -39,7 +39,7 @@ export default function BPServices({state,set,calc,summaryData}) {
             <div><Lbl>Бр.</Lbl><input style={inp} type="number" min={1} value={sg.qty} onChange={e=>updSign(i,{qty:+e.target.value})} /></div>
             <div><Lbl>Цена/бр (€)</Lbl><input style={inp} type="number" step="0.5" value={sg.priceEach} onChange={e=>updSign(i,{priceEach:+e.target.value})} /></div>
             <div><Lbl>Времетраене (мин)</Lbl><input style={inp} type="number" value={sg.timeMin} onChange={e=>updSign(i,{timeMin:+e.target.value})} /></div>
-            <button onClick={()=>set('signs',signs.filter((_,j)=>j!==i))} style={{background:'none',border:'none',color:'#c0392b',cursor:'pointer',fontSize:18,paddingBottom:4}}>×</button>
+            <button onClick={()=>set('signs',signs.filter((_,j)=>j!==i))} style={{background:'none',border:'none',color:'#F3A2BE',cursor:'pointer',fontSize:18,paddingBottom:4}}>×</button>
           </div>
         ))}
         {signs.length>0 && (
@@ -66,7 +66,7 @@ export default function BPServices({state,set,calc,summaryData}) {
             <div><Lbl>Бр.</Lbl><input style={inp} type="number" min={1} value={r.qty||1} onChange={e=>updCR(i,{qty:+e.target.value})} /></div>
             <div><Lbl>Цена/бр (€)</Lbl><input style={inp} type="number" step="0.5" value={r.price||0} onChange={e=>updCR(i,{price:+e.target.value})} /></div>
             <div><Lbl>Времетраене (мин)</Lbl><input style={inp} type="number" step="5" value={r.timeMin||0} onChange={e=>updCR(i,{timeMin:+e.target.value})} /></div>
-            <button onClick={()=>set('customRates',customRates.filter((_,j)=>j!==i))} style={{background:'none',border:'none',color:'#c0392b',cursor:'pointer',fontSize:18,paddingBottom:4}}>×</button>
+            <button onClick={()=>set('customRates',customRates.filter((_,j)=>j!==i))} style={{background:'none',border:'none',color:'#F3A2BE',cursor:'pointer',fontSize:18,paddingBottom:4}}>×</button>
           </div>
         ))}
         {customRates.length>0 && (
