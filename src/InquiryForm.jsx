@@ -42,8 +42,17 @@ export default function InquiryForm({ onClose }) {
       }
     }
 
+    const dateToISO = (d) => {
+      if (!d) return null
+      if (d.includes('-')) return d
+      const p = d.split('.')
+      if (p.length === 3) return `${p[2]}-${p[1].padStart(2,'0')}-${p[0].padStart(2,'0')}`
+      return null
+    }
+
     const { error: dbErr } = await supabase.from('inquiries').insert([{
       ...form,
+      event_date: dateToISO(form.event_date),
       guest_count: form.guest_count ? parseInt(form.guest_count) : null,
       budget: form.budget ? parseFloat(form.budget) : null,
       inspiration_url,
