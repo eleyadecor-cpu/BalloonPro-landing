@@ -5,56 +5,67 @@ export const FONT_SERIF  = "'Playfair Display',Georgia,serif"
 export const FONT_SANS   = "'DM Sans',system-ui,sans-serif"
 
 export const C = {
-  l50:  '#fcfaff',
-  l100: '#f8ecff',
-  l200: '#d9cde4',
-  l300: '#cebedc',
-  l400: '#a989ab',
-  l500: '#a989ab',
-  l600: '#735377',
-  l700: '#735377',
-  l800: '#312A44',
-  l900: '#312A44',
-  blush:'#f8ecff', blushD:'#a989ab',
-  gray:'#7a7490', ink:'#312A44', white:'#ffffff',
+  // Cotton Candy палитра
+  l50:  '#F0F9F8',   // Candy Floss — фон
+  l100: '#FFD3DD',   // Cotton Candy — светли елементи
+  l200: '#FFD3DD',
+  l300: '#F3A2BE',   // Bubble Gum — акцент
+  l400: '#F3A2BE',
+  l500: '#F3A2BE',
+  l600: '#C6E6E3',   // Mint — вторичен акцент
+  l700: '#81BFB7',   // Wintergreen — тъмен акцент
+  l800: '#3a2a35',   // Тъмен текст
+  l900: '#2a1a25',
+  blush: '#FFD3DD', blushD: '#F3A2BE',
+  gray: '#81BFB7', ink: '#3a2a35', white: '#ffffff',
+  // Удобни имена
+  pink:  '#F3A2BE',
+  mint:  '#81BFB7',
+  mintL: '#C6E6E3',
+  candy: '#FFD3DD',
+  floss: '#F0F9F8',
+  dark:  '#3a2a35',
 }
 
 export const card = {
-  background:'#fff', border:'1px solid #d9cde4',
-  padding:'20px 22px', marginBottom:14,
+  background: 'rgba(255,255,255,0.75)',
+  border: '1px solid rgba(243,162,190,0.3)',
+  padding: '20px 22px',
+  marginBottom: 14,
+  backdropFilter: 'blur(4px)',
 }
 
 export const inp = {
-  width:'100%', padding:'10px 13px',
-  border:'1px solid #d9cde4', borderRadius:0,
-  fontFamily:FONT_SANS, fontSize:14, fontWeight:500,
-  color:'#312A44', background:'#f8ecff', outline:'none',
-  boxSizing:'border-box',
+  width: '100%', padding: '10px 13px',
+  border: '1px solid #C6E6E3', borderRadius: 0,
+  fontFamily: FONT_SANS, fontSize: 14, fontWeight: 500,
+  color: '#3a2a35', background: '#F0F9F8', outline: 'none',
+  boxSizing: 'border-box',
 }
 
 export const lbl = {
-  display:'block', fontSize:10, fontWeight:600,
-  textTransform:'uppercase', letterSpacing:'.8px',
-  color:'#7a7490', marginBottom:6,
+  display: 'block', fontSize: 10, fontWeight: 600,
+  textTransform: 'uppercase', letterSpacing: '.8px',
+  color: '#81BFB7', marginBottom: 6,
 }
 
-export function pill(active, color='#735377') {
+export function pill(active, color='#F3A2BE') {
   return {
-    padding:'7px 15px', border:`1px solid ${active?color:'#d9cde4'}`,
+    padding: '7px 15px', border: `1px solid ${active ? color : '#C6E6E3'}`,
     background: active ? color : '#fff',
-    color: active ? '#fff' : '#7a7490',
-    fontFamily:FONT_SANS, fontSize:12, fontWeight:500,
-    cursor:'pointer', borderRadius:0,
+    color: active ? '#fff' : '#81BFB7',
+    fontFamily: FONT_SANS, fontSize: 12, fontWeight: 500,
+    cursor: 'pointer', borderRadius: 0,
   }
 }
 
-export function pillLight(active, color='#735377') {
+export function pillLight(active, color='#F3A2BE') {
   return {
-    padding:'7px 15px', border:`1px solid ${active?color:'#d9cde4'}`,
-    background: active ? '#f8ecff' : '#fff',
-    color: active ? color : '#7a7490',
-    fontFamily:FONT_SANS, fontSize:12, fontWeight:500,
-    cursor:'pointer', borderRadius:0,
+    padding: '7px 15px', border: `1px solid ${active ? color : '#C6E6E3'}`,
+    background: active ? '#FFD3DD' : '#fff',
+    color: active ? color : '#81BFB7',
+    fontFamily: FONT_SANS, fontSize: 12, fontWeight: 500,
+    cursor: 'pointer', borderRadius: 0,
   }
 }
 
@@ -64,9 +75,9 @@ export function Lbl({children}) {
 
 export function CardTitle({children}) {
   return (
-    <div style={{fontSize:10,fontWeight:600,textTransform:'uppercase',letterSpacing:'1px',color:'#735377',marginBottom:14,display:'flex',alignItems:'center',gap:8}}>
+    <div style={{fontSize:10,fontWeight:600,textTransform:'uppercase',letterSpacing:'1px',color:'#F3A2BE',marginBottom:14,display:'flex',alignItems:'center',gap:8}}>
       {children}
-      <span style={{flex:1,height:1,background:'#d9cde4',display:'block'}} />
+      <span style={{flex:1,height:1,background:'#C6E6E3',display:'block'}} />
     </div>
   )
 }
@@ -74,8 +85,8 @@ export function CardTitle({children}) {
 export function ScriptH({text, sub}) {
   return (
     <div style={{marginBottom:22}}>
-      <div style={{fontFamily:FONT_SCRIPT,fontSize:36,color:'#312A44',lineHeight:1.1}}>{text}</div>
-      {sub && <div style={{fontSize:11,color:'#7a7490',marginTop:4}}>{sub}</div>}
+      <div style={{fontFamily:FONT_SCRIPT,fontSize:36,color:'#3a2a35',lineHeight:1.1}}>{text}</div>
+      {sub && <div style={{fontSize:11,color:'#81BFB7',marginTop:4}}>{sub}</div>}
     </div>
   )
 }
@@ -84,9 +95,9 @@ export function Card({children, style}) {
   return <div style={{...card,...style}}>{children}</div>
 }
 
-export function InfoBand({children, color='#735377', bg}) {
+export function InfoBand({children, color='#F3A2BE', bg}) {
   return (
-    <div style={{background:bg||'#f8ecff',padding:'10px 16px',fontSize:11,color,marginBottom:14}}>
+    <div style={{background:bg||'#FFD3DD',padding:'10px 16px',fontSize:11,color,marginBottom:14}}>
       {children}
     </div>
   )
@@ -116,16 +127,16 @@ export const MANUFACTURERS = {
 }
 
 export const DENSITY = {
-  sparse:  {label:'Рядко',     factor:0.85},
-  standard:{label:'Стандартно',factor:1.0},
-  dense:   {label:'Плътно',    factor:1.2},
-  organic: {label:'Органик',   factor:1.5},
+  sparse:   {label:'Рядко',     factor:0.85},
+  standard: {label:'Стандартно',factor:1.0},
+  dense:    {label:'Плътно',    factor:1.2},
+  organic:  {label:'Органик',   factor:1.5},
 }
 
 export const TEMPO_PRESETS = {
-  beginner:{label:'Начинаещ', pair10:28,pair5:32,b18:38,asm:28},
-  medium:  {label:'Средно',   pair10:22,pair5:26,b18:30,asm:22},
-  advanced:{label:'Напреднал',pair10:15,pair5:19,b18:22,asm:15},
+  beginner: {label:'Начинаещ', pair10:28,pair5:32,b18:38,asm:28},
+  medium:   {label:'Средно',   pair10:22,pair5:26,b18:30,asm:22},
+  advanced: {label:'Напреднал',pair10:15,pair5:19,b18:22,asm:15},
 }
 
 export const FOIL_SIZES = [
