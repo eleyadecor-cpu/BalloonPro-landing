@@ -143,7 +143,7 @@ export default function BPResult({state, set, setSt, calc}) {
   },0)
   const garlandLen = state.garlandLen
   const covOk = Math.abs(totalCovPx-garlandLen)<garlandLen*0.05
-  const covColor = covOk?'#3d7a56':Math.abs(totalCovPx-garlandLen)<garlandLen*0.15?'#c0892b':'#c0392b'
+  const covColor = covOk?'#81BFB7':Math.abs(totalCovPx-garlandLen)<garlandLen*0.15?'#c0892b':'#F3A2BE'
 
   const safeColor = (hex) => {
     if (!hex) return C.l600
@@ -198,7 +198,7 @@ export default function BPResult({state, set, setSt, calc}) {
         <div style={{fontSize:10,fontWeight:600,textTransform:'uppercase',color:C.l500,letterSpacing:'1px',marginBottom:12}}>Балони по цвят</div>
         {state.decorType==='garland' && totalCovPx>0 && (
           <div style={{marginBottom:12}}>
-            <div style={{fontSize:10,background:covOk?'#e4f2ea':`${covColor}12`,color:covColor,padding:'8px 12px',marginBottom:covOk?0:6}}>
+            <div style={{fontSize:10,background:covOk?'#C6E6E3':`${covColor}12`,color:covColor,padding:'8px 12px',marginBottom:covOk?0:6}}>
               📏 Зададена: {garlandLen}см · Покрита: ~{totalCovPx.toFixed(0)}см
               {covOk?' ✅':(totalCovPx>garlandLen?` (+${(totalCovPx-garlandLen).toFixed(0)}см)`:`(${(totalCovPx-garlandLen).toFixed(0)}см)`)}
             </div>
@@ -223,7 +223,7 @@ export default function BPResult({state, set, setSt, calc}) {
                         setSt(p=>({...p, garlandExtra:newExtra, covDismissed:true}))
                       }
                     }}>🔄 Коригирай за ~{garlandLen}см</button>
-                  <button style={{padding:'7px 14px',background:'#fff',color:'#3d7a56',border:'1px solid #3d7a56',fontSize:11,fontWeight:600,cursor:'pointer'}}
+                  <button style={{padding:'7px 14px',background:'#fff',color:'#81BFB7',border:'1px solid #81BFB7',fontSize:11,fontWeight:600,cursor:'pointer'}}
                     onClick={()=>set('covDismissed',true)}>✅ Запази така</button>
                 </div>
               </div>
@@ -304,9 +304,9 @@ export default function BPResult({state, set, setSt, calc}) {
           <div key={i} style={{display:'flex',justifyContent:'space-between',fontSize:12,padding:'5px 0',borderBottom:`1px solid ${C.l50}`}}><span>{l}</span><strong>€{Number(v).toFixed(2)}</strong></div>
         ))}
         <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:0,marginTop:12}}>
-          <div style={{background:'#fde8e6',padding:'12px',textAlign:'center'}}>
-            <div style={{fontSize:9,color:'#c0392b',textTransform:'uppercase',fontWeight:600,marginBottom:3}}>Себестойност</div>
-            <div style={{fontSize:20,fontWeight:700,color:'#c0392b'}}>€{totalCost.toFixed(2)}</div>
+          <div style={{background:'#FFD3DD',padding:'12px',textAlign:'center'}}>
+            <div style={{fontSize:9,color:'#F3A2BE',textTransform:'uppercase',fontWeight:600,marginBottom:3}}>Себестойност</div>
+            <div style={{fontSize:20,fontWeight:700,color:'#F3A2BE'}}>€{totalCost.toFixed(2)}</div>
           </div>
           <div style={{background:C.l50,padding:'12px',textAlign:'center'}}>
             <div style={{fontSize:9,color:C.l600,textTransform:'uppercase',fontWeight:600,marginBottom:3}}>Печалба ({margin}%)</div>

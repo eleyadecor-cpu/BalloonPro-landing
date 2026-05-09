@@ -54,7 +54,7 @@ export function pill(active, color='#F3A2BE') {
     padding: '7px 15px', border: `1px solid ${active ? color : '#C6E6E3'}`,
     background: active ? color : '#fff',
     color: active ? '#fff' : '#81BFB7',
-    fontFamily: FONT_SANS, fontSize: 12, fontWeight: 500,
+    fontFamily: FONT_SANS, fontSize: 12, fontWeight: 600,
     cursor: 'pointer', borderRadius: 0,
   }
 }
@@ -62,9 +62,9 @@ export function pill(active, color='#F3A2BE') {
 export function pillLight(active, color='#F3A2BE') {
   return {
     padding: '7px 15px', border: `1px solid ${active ? color : '#C6E6E3'}`,
-    background: active ? '#FFD3DD' : '#fff',
-    color: active ? color : '#81BFB7',
-    fontFamily: FONT_SANS, fontSize: 12, fontWeight: 500,
+    background: active ? color : '#fff',
+    color: active ? '#fff' : '#81BFB7',
+    fontFamily: FONT_SANS, fontSize: 12, fontWeight: 600,
     cursor: 'pointer', borderRadius: 0,
   }
 }

@@ -98,8 +98,8 @@ export default function BPRates({state,set,calc,summaryData}) {
 
       {/* ── ГОРИВО + АМОРТИЗАЦИЯ ── */}
       <div style={S}>
-        <div style={{fontSize:11,fontWeight:700,textTransform:'uppercase',letterSpacing:'1px',color:'#7b5ea7',marginBottom:6}}>⛽ Гориво + Амортизация</div>
-        <InfoBox color='#7b5ea7' bg='#f5f0fb'>
+        <div style={{fontSize:11,fontWeight:700,textTransform:'uppercase',letterSpacing:'1px',color:'#81BFB7',marginBottom:6}}>⛽ Гориво + Амортизация</div>
+        <InfoBox color='#81BFB7' bg='#F0F9F8'>
           Тези разходи се добавят автоматично към себестойността. Не е нужно да ги включваш в ставката за транспорт.
         </InfoBox>
         <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:10,marginBottom:12}}>
@@ -124,9 +124,9 @@ export default function BPRates({state,set,calc,summaryData}) {
             ['🔧 Амортизация', `€${amortCost.toFixed(2)}`, `${travelKm*2}км × €${amortPerKm}/км`],
             ['Общо разход за път', `€${(fuelCost+amortCost).toFixed(2)}`, 'добавя се към себестойността'],
           ].map(([l,v,s],i)=>(
-            <div key={i} style={{textAlign:'center',padding:'12px 8px',background:i===2?'#7b5ea720':C.l50,borderRight:i<2?`1px solid ${C.l100}`:'none'}}>
-              <div style={{fontSize:9,textTransform:'uppercase',color:'#7b5ea7',fontWeight:600,marginBottom:3}}>{l}</div>
-              <div style={{fontSize:18,fontWeight:700,color:'#7b5ea7'}}>{v}</div>
+            <div key={i} style={{textAlign:'center',padding:'12px 8px',background:i===2?'#81BFB720':C.l50,borderRight:i<2?`1px solid ${C.l100}`:'none'}}>
+              <div style={{fontSize:9,textTransform:'uppercase',color:'#81BFB7',fontWeight:600,marginBottom:3}}>{l}</div>
+              <div style={{fontSize:18,fontWeight:700,color:'#81BFB7'}}>{v}</div>
               <div style={{fontSize:9,color:C.gray,marginTop:2}}>{s}</div>
             </div>
           ))}
@@ -181,17 +181,17 @@ export default function BPRates({state,set,calc,summaryData}) {
 
       {/* ── МАРЖ ── */}
       <div style={S}>
-        <div style={{fontSize:11,fontWeight:700,textTransform:'uppercase',letterSpacing:'1px',color:'#3d7a56',marginBottom:12}}>💰 Марж</div>
+        <div style={{fontSize:11,fontWeight:700,textTransform:'uppercase',letterSpacing:'1px',color:'#81BFB7',marginBottom:12}}>💰 Марж</div>
         <Lbl>Марж върху общата себестойност (материали + труд + гориво)</Lbl>
         <div style={{display:'flex',gap:8,flexWrap:'wrap',marginBottom:12}}>
           {[0,20,30,40,50,60].map(m=>(
-            <button key={m} style={pillLight(margin===m,'#3d7a56')} onClick={()=>set('margin',m)}>
+            <button key={m} style={pillLight(margin===m,'#81BFB7')} onClick={()=>set('margin',m)}>
               {m===0?'Без':m+'%'}
             </button>
           ))}
         </div>
         {margin>0 && (
-          <InfoBox color='#3d7a56' bg='#e4f2ea'>
+          <InfoBox color='#81BFB7' bg='#C6E6E3'>
             При {margin}% марж: себестойност €X → цена за клиента €X ÷ {(1-margin/100).toFixed(2)} = €{(1/(1-margin/100)).toFixed(2)}× повече
           </InfoBox>
         )}
