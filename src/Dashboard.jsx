@@ -182,7 +182,10 @@ const Dashboard = () => {
       {isCalcOpen && popup(
         <>
           <div style={{ padding:'20px 40px', borderBottom:'1px solid #FFD3DD', display:'flex', justifyContent:'space-between', alignItems:'center', backgroundColor:'rgba(255,255,255,0.9)', borderTopLeftRadius:'32px', borderTopRightRadius:'32px' }}>
-            <h2 style={{ color:'#3a2a35', fontWeight:'900', margin:0 }}>🧮 Професионален Калкулатор BalloonPro</h2>
+            <h2 style={{ color:'#3a2a35', fontWeight:'900', margin:0, display:'flex', alignItems:'center', gap:10 }}>
+  <svg width="28" height="28" viewBox="0 0 36 36"><rect width="36" height="36" rx="10" fill="#F3A2BE" opacity="0.4"/><rect x="3" y="3" width="30" height="30" rx="8" fill="#F3A2BE" opacity="0.5"/><rect x="6" y="6" width="24" height="24" rx="6" fill="white" opacity="0.9"/><rect x="9" y="9" width="18" height="5" rx="2" fill="#F3A2BE"/><rect x="9" y="17" width="5" height="5" rx="1.5" fill="#F3A2BE"/><rect x="15.5" y="17" width="5" height="5" rx="1.5" fill="#F3A2BE"/><rect x="22" y="17" width="5" height="5" rx="1.5" fill="#F3A2BE"/><rect x="9" y="24" width="5" height="3" rx="1.5" fill="#F3A2BE"/><rect x="15.5" y="24" width="5" height="3" rx="1.5" fill="#F3A2BE"/><rect x="22" y="24" width="5" height="3" rx="1.5" fill="#81BFB7"/></svg>
+  Професионален Калкулатор BalloonPro
+</h2>
             <button onClick={() => setIsCalcOpen(false)} style={{ border:'none', background:'#FFD3DD', borderRadius:'50%', width:'40px', height:'40px', cursor:'pointer', fontSize:'20px' }}>✕</button>
           </div>
           <div style={{ padding:'40px' }}><BalloonPro /></div>
