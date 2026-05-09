@@ -183,13 +183,30 @@ export default function BalloonPro() {
   const steps = ['1. Основа', '2. Цветове', '3. Акценти', '4. Услуги', '5. Локация', '6. Цени', '7. Финал']
 
   return (
-    <div style={{ padding: '10px' }}>
-      <div style={{ display: 'flex', gap: '8px', marginBottom: '20px', overflowX: 'auto' }}>
+    <div style={{ padding: '10px', background: 'linear-gradient(135deg, #FFD3DD 0%, #F0F9F8 45%, #C6E6E3 100%)', minHeight: '100vh', borderRadius: '20px' }}>
+      
+      {/* ИКОНА + ТАБОВЕ */}
+      <div style={{ display: 'flex', gap: '8px', marginBottom: '20px', overflowX: 'auto', alignItems: 'center' }}>
+        
+        {/* SVG КАЛКУЛАТОР ИКОНА */}
+        <svg width="36" height="36" viewBox="0 0 36 36" style={{ flexShrink: 0 }}>
+          <rect width="36" height="36" rx="10" fill="#F3A2BE" opacity="0.3"/>
+          <rect x="3" y="3" width="30" height="30" rx="8" fill="#F3A2BE" opacity="0.5"/>
+          <rect x="6" y="6" width="24" height="24" rx="6" fill="white" opacity="0.9"/>
+          <rect x="9" y="9" width="18" height="5" rx="2" fill="#F3A2BE"/>
+          <rect x="9" y="17" width="5" height="5" rx="1.5" fill="#F3A2BE"/>
+          <rect x="15.5" y="17" width="5" height="5" rx="1.5" fill="#F3A2BE"/>
+          <rect x="22" y="17" width="5" height="5" rx="1.5" fill="#F3A2BE"/>
+          <rect x="9" y="24" width="5" height="3" rx="1.5" fill="#F3A2BE"/>
+          <rect x="15.5" y="24" width="5" height="3" rx="1.5" fill="#F3A2BE"/>
+          <rect x="22" y="24" width="5" height="3" rx="1.5" fill="#81BFB7"/>
+        </svg>
+
         {steps.map((label, i) => (
           <button key={i} onClick={() => setStep(i)} style={{
             padding: '8px 15px', borderRadius: '15px', border: 'none',
-            background: step === i ? C.l600 : '#eee',
-            color: step === i ? 'white' : '#888',
+            background: step === i ? '#F3A2BE' : 'rgba(255,255,255,0.6)',
+            color: step === i ? '#fff' : '#81BFB7',
             cursor: 'pointer', fontWeight: 'bold', fontSize: '12px', whiteSpace: 'nowrap'
           }}>
             {label}
@@ -197,7 +214,7 @@ export default function BalloonPro() {
         ))}
       </div>
 
-      <div style={{ background: 'white', borderRadius: '20px', padding: '20px', border: '1px solid #eee' }}>
+      <div style={{ background: 'rgba(255,255,255,0.75)', borderRadius: '20px', padding: '20px', border: '1px solid rgba(243,162,190,0.3)', backdropFilter: 'blur(4px)' }}>
         {PAGES[step]}
       </div>
 
@@ -207,14 +224,14 @@ export default function BalloonPro() {
           disabled={step === 0}
           style={{
             padding: '12px 24px', borderRadius: '12px', border: 'none',
-            background: step === 0 ? '#eee' : C.l200,
-            color: step === 0 ? '#bbb' : C.l700,
+            background: step === 0 ? 'rgba(255,255,255,0.4)' : '#FFD3DD',
+            color: step === 0 ? '#bbb' : '#3a2a35',
             cursor: step === 0 ? 'default' : 'pointer',
             fontWeight: '700', fontSize: '13px'
           }}>
           ← Назад
         </button>
-        <span style={{ fontSize: '12px', color: C.gray, alignSelf: 'center' }}>
+        <span style={{ fontSize: '12px', color: '#81BFB7', alignSelf: 'center' }}>
           {step + 1} / {steps.length}
         </span>
         <button
@@ -222,7 +239,7 @@ export default function BalloonPro() {
           disabled={step === steps.length - 1}
           style={{
             padding: '12px 24px', borderRadius: '12px', border: 'none',
-            background: step === steps.length - 1 ? '#eee' : C.l600,
+            background: step === steps.length - 1 ? 'rgba(255,255,255,0.4)' : '#F3A2BE',
             color: step === steps.length - 1 ? '#bbb' : '#fff',
             cursor: step === steps.length - 1 ? 'default' : 'pointer',
             fontWeight: '700', fontSize: '13px'
