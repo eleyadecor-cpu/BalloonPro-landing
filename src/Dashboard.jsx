@@ -41,7 +41,7 @@ const Dashboard = () => {
 
   const allActions = [
     { label: '+ Запитване', icon: '📝', bg: '#F3A2BE', text: '#fff', action: () => setIsInquiryOpen(true) },
-    { label: 'Калкулатор',  icon: '🎈', bg: '#FFD3DD', text: '#3a2a35', action: () => setIsCalcOpen(true) },
+    { label: 'Калкулатор',  icon: '🧮', bg: '#FFD3DD', text: '#3a2a35', action: () => setIsCalcOpen(true) },
     { label: 'Календар',    icon: '📅', bg: '#C6E6E3', text: '#2a5450' },
     { label: '+ Оферта',    icon: '📄', bg: '#F0F9F8', text: '#81BFB7', style: { border: '1px solid #C6E6E3' } },
     { label: 'Финанси',     icon: '💰', bg: '#F0F9F8', text: '#81BFB7', style: { border: '1px solid #C6E6E3' } },
@@ -182,7 +182,7 @@ const Dashboard = () => {
       {isCalcOpen && popup(
         <>
           <div style={{ padding:'20px 40px', borderBottom:'1px solid #FFD3DD', display:'flex', justifyContent:'space-between', alignItems:'center', backgroundColor:'rgba(255,255,255,0.9)', borderTopLeftRadius:'32px', borderTopRightRadius:'32px' }}>
-            <h2 style={{ color:'#3a2a35', fontWeight:'900', margin:0 }}>🎈 Професионален Калкулатор BalloonPro</h2>
+            <h2 style={{ color:'#3a2a35', fontWeight:'900', margin:0 }}>🧮 Професионален Калкулатор BalloonPro</h2>
             <button onClick={() => setIsCalcOpen(false)} style={{ border:'none', background:'#FFD3DD', borderRadius:'50%', width:'40px', height:'40px', cursor:'pointer', fontSize:'20px' }}>✕</button>
           </div>
           <div style={{ padding:'40px' }}><BalloonPro /></div>
