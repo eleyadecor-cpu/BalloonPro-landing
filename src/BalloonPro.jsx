@@ -135,23 +135,7 @@ function buildCalc(state) {
     total = ((total % 1440) + 1440) % 1440
     return `${String(Math.floor(total/60)).padStart(2,'0')}:${String(total%60).padStart(2,'0')}`
   }
-  const buildTL = (eventTime, isDismantling = false) => {
-    if (!eventTime) return []
-
-    // Събираме всички стъпки с времетраене
-    const steps = []
-    if (!isDismantling) {
-      if (state.hasPhotoTime) steps.unshift({ label: '📸 Снимки', mins: state.photoTime || 10, note: `${state.photoTime || 10} мин` })
-      if (tSign > 0) steps.unshift({ label: '✍️ Надписи', mins: Math.ceil(tSign/60), note: `${Math.ceil(tSign/60)} мин` })
-      steps.unshift({ label: '📍 Пристигане — монтаж', mins: Math.ceil(tAttach/60), note: `${clusters} букета · ${Math.ceil(tAttach/60)} мин` })
-      if (!state.inflateOnSite) steps.unshift({ label: '🏠 Започни подготовка', mins: Math.ceil((tInflate+tFoil)/60) + Math.ceil(tPrep/60), note: `надуване ${Math.ceil((tInflate+tFoil)/60)} мин + подготовка ${Math.ceil(tPrep/60)} мин` })
-      if (travelMin) steps.unshift({ label: '🚗 Тръгни', mins: travelMin, note: `${travelKm} км · ${travelMin} мин` })
-      if (state.inflateOnSite) steps.unshift({ label: '📍 Пристигане — надуване + монтаж', mins: Math.ceil((tInflate+tFoil+tAttach)/60) + Math.ceil(tPrep/60), note: `${Math.ceil((tInflate+tFoil+tAttach)/60) + Math.ceil(tPrep/60)} мин` })
-    } else {
-      if (tSign > 0) steps.unshift({ label: '✍️ Надписи', mins: Math.ceil(tSign/60), note: `${Math.ceil(tSign/60)} мин` })
-      steps.unshift({ label: '📍 Демонтаж', mins: Math.ceil(tDismantle/60), note: `${Math.ceil(tDismantle/60)} мин` })
-      if (travelMin) steps.unshift({ label: '🚗 Тръгни', mins: travelMin, note: `${travelKm} км · ${travelMin} мин` })
-    }
+  
 
     
 
