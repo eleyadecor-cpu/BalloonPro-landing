@@ -196,6 +196,23 @@ export default function BPRates({state,set,calc,summaryData}) {
           </InfoBox>
         )}
       </div>
+      {/* ── ОТСТЪПКА ── */}
+      <div style={S}>
+        <div style={{fontSize:11,fontWeight:700,textTransform:'uppercase',letterSpacing:'1px',color:'#F3A2BE',marginBottom:12}}>🎁 Отстъпка за клиента</div>
+        <div style={{display:'flex',gap:10,marginBottom:12}}>
+          <button style={{...pillLight(state.discountType==='percent','#F3A2BE'),flex:1}} onClick={()=>set('discountType','percent')}>% Процент</button>
+          <button style={{...pillLight(state.discountType==='amount','#F3A2BE'),flex:1}} onClick={()=>set('discountType','amount')}>€ Сума</button>
+        </div>
+        {state.discountType && (
+          <div style={{display:'flex',gap:10,alignItems:'center'}}>
+            <input style={{...inp,flex:1}} type="number" min={0} step={state.discountType==='percent'?1:0.5}
+              value={state.discountValue||0}
+              onChange={e=>set('discountValue',+e.target.value)}
+              placeholder={state.discountType==='percent'?'напр. 10':'напр. 20'} />
+            <span style={{fontSize:14,fontWeight:700,color:'#F3A2BE'}}>{state.discountType==='percent'?'%':'€'}</span>
+          </div>
+        )}
+      </div>
 
       {/* TOTAL SUMMARY */}
       <div style={{background:C.l700,color:'#fff',padding:'16px 20px',display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:0}}>
