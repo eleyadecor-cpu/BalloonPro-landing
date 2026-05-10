@@ -153,22 +153,7 @@ function buildCalc(state) {
       if (travelMin) steps.unshift({ label: '🚗 Тръгни', mins: travelMin, note: `${travelKm} км · ${travelMin} мин` })
     }
 
-    // Смятаме назад от събитието
-    const subMins = (time, m) => {
-    if (!time) return ''
-    const [h, min] = time.split(':').map(Number)
-    let total = h * 60 + min - m
-    total = ((total % 1440) + 1440) % 1440
-    return `${String(Math.floor(total/60)).padStart(2,'0')}:${String(total%60).padStart(2,'0')}`
-  }
-
-  const subMins = (time, m) => {
-    if (!time) return ''
-    const [h, min] = time.split(':').map(Number)
-    let total = h * 60 + min - m
-    total = ((total % 1440) + 1440) % 1440
-    return `${String(Math.floor(total/60)).padStart(2,'0')}:${String(total%60).padStart(2,'0')}`
-  }
+    
 
   const buildTL = (eventTime, isDismantling = false) => {
     if (!eventTime) return []
