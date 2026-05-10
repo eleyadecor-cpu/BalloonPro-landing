@@ -4,6 +4,7 @@ import InquiryForm from './InquiryForm.jsx';
 import InquiryList from './InquiryList.jsx';
 import TaskForm from './TaskForm.jsx';
 import ClientsPage from './ClientsPage.jsx';
+import InventoryPage from './InventoryPage.jsx';
 import { supabase } from './supabaseClient';
 
 const DAYS = ['П','В','С','Ч','П','С','Н'];
@@ -15,6 +16,7 @@ const Dashboard = () => {
   const [isInquiryOpen, setIsInquiryOpen] = useState(false);
   const [isTaskOpen, setIsTaskOpen] = useState(false);
   const [showClients, setShowClients] = useState(false);
+  const [showInventory, setShowInventory] = useState(false);
   const [leftTab, setLeftTab] = useState('calendar');
   const [weather, setWeather] = useState(null);
   const [inquiries, setInquiries] = useState([]);
@@ -84,7 +86,7 @@ const Dashboard = () => {
     { label: '+ Оферта',   icon: '📄', g: ['#FFD3DD','#F3A2BE'] },
     { label: 'Клиенти', icon: '👥', g: ['#C6E6E3','#81BFB7'], action: () => setShowClients(true) },
     { label: 'Финанси',    icon: '💰', g: ['#FFD3DD','#F3A2BE'] },
-    { label: 'Склад',      icon: '🎈', g: ['#C6E6E3','#81BFB7'] },
+    { label: 'Склад', icon: '📦', g: ['#C6E6E3','#81BFB7'], action: () => setShowInventory(true) },
     { label: 'Теми',       icon: '🎨', g: ['#FFD3DD','#F3A2BE'] },
     { label: 'Калкулатор', icon: null, g: null, action: () => setIsCalcOpen(true), light: true },
   ];
@@ -104,6 +106,7 @@ const Dashboard = () => {
     </div>
   );
   if (showClients) return <ClientsPage onBack={() => setShowClients(false)} />
+  if (showInventory) return <InventoryPage onBack={() => setShowInventory(false)} />
   return (
     <div style={{ padding:24, background:'linear-gradient(135deg,#FFD3DD 0%,#F0F9F8 45%,#C6E6E3 100%)', minHeight:'100vh', fontFamily:'sans-serif' }}>
 
