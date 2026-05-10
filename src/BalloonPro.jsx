@@ -122,6 +122,10 @@ function buildCalc(state) {
   const margin     = state.margin || 0
   const price      = margin > 0 ? costTotal / (1 - margin / 100) : costTotal
   const salePrice  = price
+  const discountAmount = state.discountType === 'percent'
+    ? price * ((state.discountValue || 0) / 100)
+    : (state.discountValue || 0)
+  const finalPrice = Math.max(0, price - discountAmount)
 
   // Timeline builder
   const buildTL = (eventTime, isDismantling = false) => {
@@ -257,6 +261,7 @@ function buildCalc(state) {
     lInfl, lInst, lDism, lTrans, fuelCost, amortCost,
     matBalloons, matAccents, matFoil, matSigns, matCustom,
     matTotal, matCost, laborTotal, costTotal, totalCost, price, salePrice,
+    discountAmount, finalPrice,
     setupTL, dismTL,
   }
 }
