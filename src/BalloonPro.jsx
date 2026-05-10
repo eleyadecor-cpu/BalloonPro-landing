@@ -123,22 +123,46 @@ function buildCalc(state) {
   const salePrice  = price
 
   // Timeline builder
-  const buildTL = (startTime, isDismantling = false) => {
-    if (!startTime) return []
-    const rows = []
-    let cur = startTime
-    const add = (label, secs, note = '') => {
-      const mins = Math.ceil(secs / 60)
-      rows.push({ time: cur, label, note: note || `${mins} мин`, mins })
-      cur = addMinToTime(cur, mins)
+  const buildTL = (eventTime, isDismantling = false) => {
+    if (!eventTime) return []
+
+    // Събираме всички стъпки с времетраене
+    const steps = []
+    if (!isDismantling) {
+      if (state.hasPhotoTime) steps.unshift({ label: '📸 Снимки', mins: state.photoTime || 10, note: `${state.photoTime || 10} мин` })
+      if (tSign > 0) steps.unshift({ label: '✍️ Надписи', mins: Math.ceil(tSign/60), note: `${Math.ceil(tSign/60)} мин` })
+      steps.unshift({ label: '📍 Пристигане — монтаж', mins: Math.ceil(tAttach/60), note: `${clusters} букета · ${Math.ceil(tAttach/60)} мин` })
+      if (!state.inflateOnSite) steps.unshift({ label: '🏠 Започни подготовка', mins: Math.ceil((tInflate+tFoil)/60) + Math.ceil(tPrep/60), note: `надуване ${Math.ceil((tInflate+tFoil)/60)} мин + подготовка ${Math.ceil(tPrep/60)} мин` })
+      if (travelMin) steps.unshift({ label: '🚗 Тръгни', mins: travelMin, note: `${travelKm} км · ${travelMin} мин` })
+      if (state.inflateOnSite) steps.unshift({ label: '📍 Пристигане — надуване + монтаж', mins: Math.ceil((tInflate+tFoil+tAttach)/60) + Math.ceil(tPrep/60), note: `${Math.ceil((tInflate+tFoil+tAttach)/60) + Math.ceil(tPrep/60)} мин` })
+    } else {
+      if (tSign > 0) steps.unshift({ label: '✍️ Надписи', mins: Math.ceil(tSign/60), note: `${Math.ceil(tSign/60)} мин` })
+      steps.unshift({ label: '📍 Демонтаж', mins: Math.ceil(tDismantle/60), note: `${Math.ceil(tDismantle/60)} мин` })
+      if (travelMin) steps.unshift({ label: '🚗 Тръгни', mins: travelMin, note: `${travelKm} км · ${travelMin} мин` })
     }
-    if (travelMin) add('🚗 Тръгване', travelMin * 60, `${travelKm} км · ${travelMin} мин`)
-    add('📦 Разопаковане', tPrep, `${Math.ceil(tPrep/60)} мин`)
-    if (!isDismantling && !state.inflateOnSite) add('🎈 Надуване', tInflate + tFoil, `${Math.ceil((tInflate+tFoil)/60)} мин`)
-    add('📍 Монтаж', tAttach, `${clusters} букета · ${Math.ceil(tAttach/60)} мин`)
-    if (tSign > 0) add('✍️ Надписи', tSign, `${Math.ceil(tSign/60)} мин`)
-    if (!isDismantling && state.hasPhotoTime) add('📸 Снимки', (state.photoTime || 10) * 60, `${state.photoTime || 10} мин`)
-    rows.push({ time: cur, label: isDismantling ? '✅ Демонтаж завършен' : '✅ Готово', note: '', mins: 0 })
+
+    // Смятаме назад от събитието
+    const subMins = (time, m) => {
+      const [h, min] = time.split(':').map(Number)
+      let total = h * 60 + min - m
+      total = ((total % 1440) + 1440) % 1440
+      return `${String(Math.floor(total/60)).padStart(2,'0')}:${String(total%60).padStart(2,'0')}`
+    }
+
+    const rows = []
+    let cur = eventTime
+    for (let i = steps.length - 1; i >= 0; i--) {
+      cur = subMins(cur, steps[i].mins)
+      rows.unshift({ time: cur, label: steps[i].label, note: steps[i].note, mins: steps[i].mins })
+    }
+
+    // Добавяме финалния ред
+    if (!isDismantling) {
+      rows.push({ time: eventTime, label: '🎉 Събитието започва', note: '', mins: 0, isEvent: true })
+    } else {
+      rows.push({ time: eventTime, label: '✅ Демонтаж завършен', note: '', mins: 0, isEvent: true })
+    }
+
     return rows
   }
 
