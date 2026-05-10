@@ -141,6 +141,9 @@ function OfferForm({ offer, prefill, onClose, onSaved }) {
       guest_count: form.guest_count ? +form.guest_count : null,
       discount: +form.discount,
       deposit: +form.deposit,
+      inquiry_id: form.inquiry_id || null,
+      theme_id: form.theme_id || null,
+      client_id: form.client_id || null,
     }
     const { error: dbErr } = offer
       ? await supabase.from('offers').update(payload).eq('id', offer.id)
