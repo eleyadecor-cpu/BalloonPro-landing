@@ -97,13 +97,17 @@ function OfferForm({ offer, prefill, onClose, onSaved }) {
     const updated = form.items.map((item, idx) => {
       if (idx !== i) return item
       const newItem = { ...item, [field]: value }
-      if (field === 'quantity' || field === 'unit_price') {
-        newItem.total = (field==='quantity'?+value:+item.unit_price) * (field==='unit_price'?+value:+item.quantity)
-      }
+      const qty = field === 'quantity' ? +value : +newItem.quantity
+      const price = field === 'unit_price' ? +value : +newItem.unit_price
+      newItem.total = qty * price
       return newItem
     })
-    set('items', updated)
-    recalculate(updated, form.discount, form.delivery, form.delivery_price, form.installation, form.installation_price, form.dismantling, form.dismantling_price)
+    setForm(p => {
+      const services = (p.delivery?+p.delivery_price:0) + (p.installation?+p.installation_price:0) + (p.dismantling?+p.dismantling_price:0)
+      const subtotal = updated.reduce((s,i) => s + (i.total||0), 0) + services
+      const total = subtotal - (+p.discount||0)
+      return { ...p, items: updated, subtotal, total }
+    })
   }
 
   const removeItem = (i) => {
