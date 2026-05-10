@@ -437,7 +437,7 @@ export default function OfferPage({ onBack, prefillInquiry }) {
 
       <div style={{ display:'flex', gap:10 }}>
         <button onClick={() => { setEditOffer(selected); setIsFormOpen(true) }} style={{ padding:'12px 24px', background:'linear-gradient(135deg,#C6E6E3,#81BFB7)', border:'none', borderRadius:12, color:'#fff', fontWeight:700, cursor:'pointer' }}>✏️ Редактирай</button>
-        <button style={{ padding:'12px 24px', background:'linear-gradient(135deg,#FFD3DD,#F3A2BE)', border:'none', borderRadius:12, color:'#fff', fontWeight:700, cursor:'pointer' }}>📄 Свали PDF</button>
+        
         <button onClick={async () => {
           const { data: settings } = await supabase.from('settings').select('*').limit(1).single()
           const s = settings || {}
