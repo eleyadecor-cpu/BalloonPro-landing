@@ -6,6 +6,7 @@ import TaskForm from './TaskForm.jsx';
 import ClientsPage from './ClientsPage.jsx';
 import InventoryPage from './InventoryPage.jsx';
 import { supabase } from './supabaseClient';
+import ThemesPage from './ThemesPage.jsx';
 
 const DAYS = ['П','В','С','Ч','П','С','Н'];
 const MONTHS = ['Януари','Февруари','Март','Април','Май','Юни','Юли','Август','Септември','Октомври','Ноември','Декември'];
@@ -28,6 +29,7 @@ const Dashboard = () => {
   const offset = firstDay === 0 ? 6 : firstDay - 1;
   const daysInMonth = new Date(year, month + 1, 0).getDate();
   const weekDays = ['Пет','Съб','Нед','Пон','Вто','Сря','Чет'];
+  const [showThemes, setShowThemes] = useState(false);
 
   useEffect(() => {
     fetch('https://api.open-meteo.com/v1/forecast?latitude=42.62&longitude=25.4&current=temperature_2m,weathercode,windspeed_10m&daily=weathercode,temperature_2m_max,temperature_2m_min&timezone=Europe%2FSofia&forecast_days=7')
@@ -87,7 +89,7 @@ const Dashboard = () => {
     { label: 'Клиенти', icon: '👥', g: ['#C6E6E3','#81BFB7'], action: () => setShowClients(true) },
     { label: 'Финанси',    icon: '💰', g: ['#FFD3DD','#F3A2BE'] },
     { label: 'Склад', icon: '📦', g: ['#C6E6E3','#81BFB7'], action: () => setShowInventory(true) },
-    { label: 'Теми',       icon: '🎨', g: ['#FFD3DD','#F3A2BE'] },
+    { label: 'Теми', icon: '🎨', g: ['#FFD3DD','#F3A2BE'], action: () => setShowThemes(true) },
     { label: 'Калкулатор', icon: null, g: null, action: () => setIsCalcOpen(true), light: true },
   ];
 
@@ -107,6 +109,7 @@ const Dashboard = () => {
   );
   if (showClients) return <ClientsPage onBack={() => setShowClients(false)} />
   if (showInventory) return <InventoryPage onBack={() => setShowInventory(false)} />
+  if (showThemes) return <ThemesPage onBack={() => setShowThemes(false)} />
   return (
     <div style={{ padding:24, background:'linear-gradient(135deg,#FFD3DD 0%,#F0F9F8 45%,#C6E6E3 100%)', minHeight:'100vh', fontFamily:'sans-serif' }}>
 
