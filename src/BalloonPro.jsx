@@ -32,6 +32,7 @@ const INIT = {
   bufferBefore: 15, bufferFinish: 10,
   dismSameDay: true, dismDate: '', dismTime: '',
   garlandExtra: 0, covDismissed: false,
+  discountType: '', discountValue: 0,
 }
 
 function addMinToTime(timeStr, mins) {
@@ -143,21 +144,100 @@ function buildCalc(state) {
 
     // Смятаме назад от събитието
     const subMins = (time, m) => {
-      const [h, min] = time.split(':').map(Number)
-      let total = h * 60 + min - m
-      total = ((total % 1440) + 1440) % 1440
-      return `${String(Math.floor(total/60)).padStart(2,'0')}:${String(total%60).padStart(2,'0')}`
+    if (!time) return ''
+    const [h, min] = time.split(':').map(Number)
+    let total = h * 60 + min - m
+    total = ((total % 1440) + 1440) % 1440
+    return `${String(Math.floor(total/60)).padStart(2,'0')}:${String(total%60).padStart(2,'0')}`
+  }
+
+  const buildTL = (eventTime, isDismantling = false) => {
+    if (!eventTime) return []
+
+    const bufferFinish = state.bufferFinish || 0
+    const bufferBefore = state.bufferBefore || 0
+    const setupMin = state.setupMinFixed || 15
+    const adjustMin = state.adjustMinFixed || 10
+    const attachMin = Math.ceil(tAttach / 60)
+    const inflateMin = Math.ceil((tInflate + tFoil) / 60)
+    const travelMins = state.travelMin || 0
+
+    const readyTime = subMins(eventTime, bufferFinish)
+
+    const steps = []
+
+    if (!isDismantling) {
+      // Снимки
+      if (state.hasPhotoTime) {
+        steps.push({ label: '📸 Снимки', mins: state.photoTime || 10, note: `${state.photoTime || 10} мин` })
+      }
+
+      // Услуги от таб 4 (надписи + допълнителни)
+      const signItems = (state.signs || []).filter(s => s.timeMin > 0)
+      const customItems = (state.customRates || []).filter(r => r.timeMin > 0)
+      const allServices = [...signItems.map(s => ({ desc: s.desc || 'Надпис', mins: s.timeMin })), ...customItems.map(r => ({ desc: r.desc || 'Услуга', mins: r.timeMin }))]
+      if (allServices.length > 0) {
+        const totalServiceMins = allServices.reduce((s, i) => s + i.mins, 0)
+        const desc = allServices.map(s => s.desc).join(' + ')
+        steps.push({ label: '✍️ Услуги', mins: totalServiceMins, note: `${desc} · ${totalServiceMins} мин` })
+      }
+
+      // Финални корекции
+      steps.push({ label: '🔧 Финални корекции', mins: adjustMin, note: `${adjustMin} мин` })
+
+      // Закачане на букети
+      steps.push({ label: '📍 Закачане на букети', mins: attachMin, note: `${clusters} букета · ${attachMin} мин` })
+
+      // Разопаковане
+      steps.push({ label: '📦 Разопаковане', mins: setupMin, note: `${setupMin} мин` })
+
+      // Пристигане (пътуване)
+      if (travelMins > 0) {
+        steps.push({ label: '🚗 Пристигане', mins: travelMins, note: `${state.travelKm || 0} км · ${travelMins} мин` })
+      }
+
+      // Надуване (ако предварително)
+      if (!state.inflateOnSite && inflateMin > 0) {
+        steps.push({ label: '🏠 Надуване (предварително)', mins: inflateMin, note: `${inflateMin} мин` })
+      }
+
+      // Тръгване + буфер
+      if (travelMins > 0 || bufferBefore > 0) {
+        steps.push({ label: '🚗 Тръгни', mins: bufferBefore, note: bufferBefore > 0 ? `+ ${bufferBefore} мин резерв` : '' })
+      }
+
+    } else {
+      // ДЕМОНТАЖ — процент от монтажа
+      const dismantlePercent = state.dismantlePercent || 50
+      const mountTotal = setupMin + attachMin + adjustMin + (state.signs||[]).reduce((s,sg)=>s+(sg.timeMin||0),0) + (state.customRates||[]).reduce((s,r)=>s+(r.timeMin||0),0)
+      const dismMin = Math.ceil(mountTotal * dismantlePercent / 100)
+
+      if (travelMins > 0) {
+        steps.push({ label: '🚗 Пристигане', mins: travelMins, note: `${state.travelKm || 0} км · ${travelMins} мин` })
+      }
+      steps.push({ label: '📍 Демонтаж', mins: dismMin, note: `${dismantlePercent}% от монтажа · ${dismMin} мин` })
+      if (travelMins > 0 || bufferBefore > 0) {
+        steps.push({ label: '🚗 Тръгни', mins: bufferBefore, note: bufferBefore > 0 ? `+ ${bufferBefore} мин резерв` : '' })
+      }
     }
 
+    // Смятаме назад от readyTime
     const rows = []
-    let cur = eventTime
+    let cur = readyTime
     for (let i = steps.length - 1; i >= 0; i--) {
-      cur = subMins(cur, steps[i].mins)
+      if (steps[i].mins > 0) {
+        cur = subMins(cur, steps[i].mins)
+      }
       rows.unshift({ time: cur, label: steps[i].label, note: steps[i].note, mins: steps[i].mins })
     }
 
-    // Добавяме финалния ред
+    // Финални редове
     if (!isDismantling) {
+      if (bufferFinish > 0) {
+        rows.push({ time: readyTime, label: `✅ Готово (${bufferFinish} мин резерв)`, note: '', mins: 0 })
+      } else {
+        rows.push({ time: readyTime, label: '✅ Готово', note: '', mins: 0 })
+      }
       rows.push({ time: eventTime, label: '🎉 Събитието започва', note: '', mins: 0, isEvent: true })
     } else {
       rows.push({ time: eventTime, label: '✅ Демонтаж завършен', note: '', mins: 0, isEvent: true })
