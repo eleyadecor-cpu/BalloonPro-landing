@@ -435,7 +435,150 @@ export default function OfferPage({ onBack, prefillInquiry }) {
       <div style={{ display:'flex', gap:10 }}>
         <button onClick={() => { setEditOffer(selected); setIsFormOpen(true) }} style={{ padding:'12px 24px', background:'linear-gradient(135deg,#C6E6E3,#81BFB7)', border:'none', borderRadius:12, color:'#fff', fontWeight:700, cursor:'pointer' }}>✏️ Редактирай</button>
         <button style={{ padding:'12px 24px', background:'linear-gradient(135deg,#FFD3DD,#F3A2BE)', border:'none', borderRadius:12, color:'#fff', fontWeight:700, cursor:'pointer' }}>📄 Свали PDF</button>
-        <button style={{ padding:'12px 24px', background:'rgba(255,255,255,0.8)', border:'1px solid #C6E6E3', borderRadius:12, color:'#81BFB7', fontWeight:700, cursor:'pointer' }}>📧 Изпрати по имейл</button>
+        <button onClick={async () => {
+          const { data: settings } = await supabase.from('settings').select('*').limit(1).single()
+          const s = settings || {}
+          const clientName = selected.clients?.name || '—'
+          const formatD = (iso) => { if (!iso) return '—'; const p = iso.split('-'); return `${p[2]}.${p[1]}.${p[0]}` }
+
+          const itemRows = (selected.items||[]).map(item => `
+            <tr>
+              <td>${item.description||'—'}</td>
+              <td style="text-align:center">${item.quantity}</td>
+              <td style="text-align:right">€${(item.unit_price||0).toFixed(2)}</td>
+              <td style="text-align:right;font-weight:700">€${(item.total||0).toFixed(2)}</td>
+            </tr>`).join('')
+
+          const html = `<!DOCTYPE html><html><head><meta charset="UTF-8">
+            <style>
+              @import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Lato:wght@300;400;700&display=swap');
+              * { margin:0; padding:0; box-sizing:border-box; }
+              body { font-family:'Lato',sans-serif; color:#3a2a35; background:#fff; font-size:13px; }
+              .header {
+                background: linear-gradient(135deg, #FFD3DD 0%, #C6E6E3 100%);
+                padding: 32px 40px 24px;
+                display: flex;
+                justify-content: space-between;
+                align-items: flex-start;
+              }
+              .logo-block { color: #fff; }
+              .logo-main { font-family:'Dancing Script',cursive; font-size:42px; font-weight:700; color:#fff; line-height:1; text-shadow: 1px 1px 3px rgba(0,0,0,0.15); }
+              .logo-sub { font-size:12px; color:rgba(255,255,255,0.9); letter-spacing:3px; margin-top:2px; }
+              .logo-contact { margin-top:12px; font-size:11px; color:rgba(255,255,255,0.85); line-height:1.8; }
+              .offer-meta { text-align:right; color:#fff; }
+              .offer-num { font-size:18px; font-weight:700; margin-bottom:6px; }
+              .offer-date { font-size:11px; color:rgba(255,255,255,0.85); line-height:1.8; }
+              .divider { height:1px; background:rgba(255,255,255,0.5); margin: 20px 40px 0; }
+              .client-bar { background:rgba(255,255,255,0.4); padding:14px 40px; display:flex; justify-content:space-between; align-items:center; }
+              .client-name { font-size:15px; font-weight:700; color:#3a2a35; }
+              .client-event { font-size:12px; color:#81BFB7; margin-top:2px; }
+              .body { padding:24px 40px; }
+              .section-title { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:1.5px; color:#F3A2BE; margin:20px 0 10px; padding-bottom:6px; border-bottom:2px solid #FFD3DD; }
+              table { width:100%; border-collapse:collapse; font-size:12px; }
+              thead tr { background:#F0F9F8; }
+              th { padding:8px 10px; text-align:left; font-size:10px; text-transform:uppercase; letter-spacing:1px; color:#81BFB7; font-weight:700; }
+              th:last-child, td:last-child { text-align:right; }
+              td { padding:8px 10px; border-bottom:1px solid #f5f0ff; }
+              tr:last-child td { border-bottom:none; }
+              .totals { margin-top:16px; margin-left:auto; width:280px; }
+              .total-row { display:flex; justify-content:space-between; padding:6px 0; font-size:13px; border-bottom:1px solid #f5f0ff; }
+              .total-row.final { font-size:16px; font-weight:700; color:#fff; background:linear-gradient(135deg,#F3A2BE,#81BFB7); padding:12px 16px; border-radius:8px; margin-top:8px; border:none; }
+              .total-row.discount { color:#F3A2BE; }
+              .deposit-box { margin-top:16px; background:#F0F9F8; border-left:3px solid #81BFB7; padding:12px 16px; font-size:12px; }
+              .notes-box { margin-top:16px; background:#FFF8F9; border-left:3px solid #FFD3DD; padding:12px 16px; font-size:12px; color:#3a2a35; line-height:1.6; }
+              .footer { margin-top:32px; padding:16px 40px; background:linear-gradient(135deg,#FFD3DD,#C6E6E3); text-align:center; font-size:11px; color:rgba(255,255,255,0.95); }
+              .services-row { background:#FFF8F9; }
+              @media print { body{-webkit-print-color-adjust:exact;print-color-adjust:exact;} }
+            </style>
+          </head><body>
+
+          <div class="header">
+            <div class="logo-block">
+              <div class="logo-main">Eleya Decor</div>
+              <div class="logo-sub">studio</div>
+              <div class="logo-contact">
+                ${s.company_email||'eleya.decor@gmail.com'}<br>
+                ${s.company_phone||'+359 877 163 171'}<br>
+                ${s.company_address||'гр. Казанлък'}
+              </div>
+            </div>
+            <div class="offer-meta">
+              <div class="offer-num">Оферта № ${selected.offer_number||'—'}</div>
+              <div class="offer-date">
+                Дата: ${formatD(new Date().toISOString().split('T')[0])}<br>
+                ${selected.valid_until?'Валидна до: '+formatD(selected.valid_until):''}
+              </div>
+            </div>
+          </div>
+
+          <div class="divider"></div>
+
+          <div class="client-bar">
+            <div>
+              <div class="client-name">До: ${clientName}</div>
+              <div class="client-event">
+                ${selected.event_type||''} ${selected.event_date?'· '+formatD(selected.event_date):''} ${selected.event_time?'· '+selected.event_time:''} ${selected.location?'· '+selected.location:''}
+              </div>
+            </div>
+            ${selected.guest_count?`<div style="font-size:12px;color:#81BFB7;">👥 ${selected.guest_count} гости</div>`:''}
+          </div>
+
+          <div class="body">
+            <div class="section-title">Артикули и услуги</div>
+            <table>
+              <thead><tr>
+                <th>Описание</th>
+                <th style="text-align:center">Бр.</th>
+                <th style="text-align:right">Ед. цена</th>
+                <th style="text-align:right">Общо</th>
+              </tr></thead>
+              <tbody>
+                ${itemRows}
+                ${selected.delivery?`<tr class="services-row"><td>🚚 Доставка</td><td style="text-align:center">1</td><td style="text-align:right">€${(selected.delivery_price||0).toFixed(2)}</td><td style="text-align:right;font-weight:700">€${(selected.delivery_price||0).toFixed(2)}</td></tr>`:''}
+                ${selected.installation?`<tr class="services-row"><td>🔧 Монтаж</td><td style="text-align:center">1</td><td style="text-align:right">€${(selected.installation_price||0).toFixed(2)}</td><td style="text-align:right;font-weight:700">€${(selected.installation_price||0).toFixed(2)}</td></tr>`:''}
+                ${selected.dismantling?`<tr class="services-row"><td>📦 Демонтаж</td><td style="text-align:center">1</td><td style="text-align:right">€${(selected.dismantling_price||0).toFixed(2)}</td><td style="text-align:right;font-weight:700">€${(selected.dismantling_price||0).toFixed(2)}</td></tr>`:''}
+              </tbody>
+            </table>
+
+            <div class="totals">
+              <div class="total-row"><span>Сума</span><span>€${(selected.subtotal||0).toFixed(2)}</span></div>
+              ${selected.discount>0?`<div class="total-row discount"><span>Отстъпка</span><span>-€${(selected.discount||0).toFixed(2)}</span></div>`:''}
+              <div class="total-row final"><span>ОБЩО</span><span>€${(selected.total||0).toFixed(2)}</span></div>
+            </div>
+
+            ${selected.deposit>0?`
+            <div class="deposit-box">
+              💳 <strong>Депозит:</strong> €${(selected.deposit||0).toFixed(2)}
+              ${selected.deposit_due_date?` · Краен срок: ${formatD(selected.deposit_due_date)}`:''}
+            </div>`:''}
+
+            ${selected.notes?`
+            <div class="section-title" style="margin-top:20px">Бележки</div>
+            <div class="notes-box">${selected.notes}</div>`:''}
+          </div>
+
+          <div class="footer">
+            ${s.offer_footer_text||'Благодарим Ви за доверието! 🌸'}<br>
+            <strong>Eleya Decor Studio</strong> · ${s.company_email||'eleya.decor@gmail.com'} · ${s.company_phone||'+359 877 163 171'}
+          </div>
+
+          </body></html>`
+
+          const w = window.open('','_blank','width=900,height=1100')
+          w.document.write(html)
+          w.document.close()
+          setTimeout(() => w.print(), 800)
+        }} style={{ padding:'12px 20px', background:'linear-gradient(135deg,#FFD3DD,#F3A2BE)', border:'none', borderRadius:12, color:'#fff', fontWeight:700, cursor:'pointer', fontSize:13 }}>
+          📄 Свали PDF
+        </button>
+        <button onClick={() => {
+          const formatD = (iso) => { if (!iso) return '—'; const p = iso.split('-'); return `${p[2]}.${p[1]}.${p[0]}` }
+          const subject = encodeURIComponent(`Оферта от Eleya Decor Studio — ${selected.event_type||'Събитие'} ${formatD(selected.event_date)}`)
+          const body = encodeURIComponent(`Здравейте, ${selected.clients?.name||''},\n\nБлагодарим Ви за интереса към Eleya Decor Studio! 🌸\n\nМоля, намерете приложената оферта за Вашето събитие.\n\nОферта №: ${selected.offer_number||'—'}\nСъбитие: ${selected.event_type||'—'} на ${formatD(selected.event_date)}\nОбща сума: €${(selected.total||0).toFixed(2)}\n${selected.deposit>0?'Депозит: €'+selected.deposit.toFixed(2)+' до '+formatD(selected.deposit_due_date)+'\n':''}Валидна до: ${formatD(selected.valid_until)}\n\nЗа въпроси не се колебайте да се свържете с нас.\n\nС уважение,\nEleya Decor Studio\neleya.decor@gmail.com\n+359 877 163 171`)
+          window.open(`mailto:?subject=${subject}&body=${body}`)
+        }} style={{ padding:'12px 20px', background:'rgba(255,255,255,0.8)', border:'1px solid #C6E6E3', borderRadius:12, color:'#81BFB7', fontWeight:700, cursor:'pointer', fontSize:13 }}>
+          📧 Изпрати по имейл
+        </button>
         <button onClick={() => deleteOffer(selected.id)} style={{ padding:'12px 24px', background:'#FFD3DD', border:'none', borderRadius:12, color:'#c0392b', fontWeight:700, cursor:'pointer' }}>🗑️ Изтрий</button>
       </div>
 
