@@ -128,6 +128,13 @@ function buildCalc(state) {
   const finalPrice = Math.max(0, price - discountAmount)
 
   // Timeline builder
+  const subMins = (time, m) => {
+    if (!time) return ''
+    const [h, min] = time.split(':').map(Number)
+    let total = h * 60 + min - m
+    total = ((total % 1440) + 1440) % 1440
+    return `${String(Math.floor(total/60)).padStart(2,'0')}:${String(total%60).padStart(2,'0')}`
+  }
   const buildTL = (eventTime, isDismantling = false) => {
     if (!eventTime) return []
 
@@ -155,9 +162,16 @@ function buildCalc(state) {
     return `${String(Math.floor(total/60)).padStart(2,'0')}:${String(total%60).padStart(2,'0')}`
   }
 
+  const subMins = (time, m) => {
+    if (!time) return ''
+    const [h, min] = time.split(':').map(Number)
+    let total = h * 60 + min - m
+    total = ((total % 1440) + 1440) % 1440
+    return `${String(Math.floor(total/60)).padStart(2,'0')}:${String(total%60).padStart(2,'0')}`
+  }
+
   const buildTL = (eventTime, isDismantling = false) => {
     if (!eventTime) return []
-
     const bufferFinish = state.bufferFinish || 0
     const bufferBefore = state.bufferBefore || 0
     const setupMin = state.setupMinFixed || 15
@@ -165,7 +179,6 @@ function buildCalc(state) {
     const attachMin = Math.ceil(tAttach / 60)
     const inflateMin = Math.ceil((tInflate + tFoil) / 60)
     const travelMins = state.travelMin || 0
-
     const readyTime = subMins(eventTime, bufferFinish)
 
     const steps = []
