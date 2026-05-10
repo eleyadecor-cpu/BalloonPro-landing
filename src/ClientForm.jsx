@@ -70,14 +70,7 @@ export default function ClientForm({ onClose, onSaved, editClient }) {
 
   const S = { background: '#fff', border: '1px solid #C6E6E3', padding: '20px', marginBottom: 12, borderRadius: 16 }
 
-  const DateField = ({ value, onChange, placeholder = 'дд.мм.гггг' }) => (
-    <input style={inp} placeholder={placeholder} maxLength={10} value={value} onChange={e => {
-      let v = e.target.value.replace(/[^0-9.]/g, '')
-      if (v.length === 2 && !v.includes('.')) v += '.'
-      if (v.length === 5 && v.split('.').length === 2) v += '.'
-      onChange(v)
-    }} />
-  )
+  
 
   return (
     <div>
@@ -88,7 +81,12 @@ export default function ClientForm({ onClose, onSaved, editClient }) {
           <div><Lbl>Име *</Lbl><input style={inp} placeholder="Мария Иванова" value={form.name} onChange={e => set('name', e.target.value)} /></div>
           <div><Lbl>Телефон</Lbl><input style={inp} placeholder="+359 88..." value={form.phone} onChange={e => set('phone', e.target.value)} /></div>
           <div><Lbl>Имейл</Lbl><input style={inp} placeholder="email@gmail.com" value={form.email} onChange={e => set('email', e.target.value)} /></div>
-          <div><Lbl>Рожден ден</Lbl><DateField value={form.birthday} onChange={v => set('birthday', v)} /></div>
+          <div><Lbl>Рожден ден</Lbl><input style={inp} placeholder="дд.мм.гггг" maxLength={10} value={form.birthday} onChange={e => {
+            let v = e.target.value.replace(/[^0-9.]/g,'')
+            if (v.length===2 && !v.includes('.')) v+='.'
+            if (v.length===5 && v.split('.').length===2) v+='.'
+            set('birthday', v)
+          }} /></div>
           <div>
             <Lbl>Предпочита контакт</Lbl>
             <select style={inp} value={form.preferred_contact} onChange={e => set('preferred_contact', e.target.value)}>
@@ -164,7 +162,12 @@ export default function ClientForm({ onClose, onSaved, editClient }) {
         {form.family_members.map((m, i) => (
           <div key={i} style={{ display:'grid', gridTemplateColumns:'2fr 1fr 1fr auto', gap:8, marginBottom:8, padding:12, background:'#F0F9F8', borderRadius:10 }}>
             <div><Lbl>Име</Lbl><input style={inp} placeholder="напр. Иван" value={m.name} onChange={e => updateMember(i, 'name', e.target.value)} /></div>
-            <div><Lbl>Рожден ден</Lbl><DateField value={m.birthday || ''} onChange={v => updateMember(i, 'birthday', v)} /></div>
+            <div><Lbl>Рожден ден</Lbl><input style={inp} placeholder="дд.мм.гггг" maxLength={10} value={m.birthday||''} onChange={e => {
+  let v = e.target.value.replace(/[^0-9.]/g,'')
+  if (v.length===2 && !v.includes('.')) v+='.'
+  if (v.length===5 && v.split('.').length===2) v+='.'
+  updateMember(i, 'birthday', v)
+}} /></div>
             <div><Lbl>Телефон</Lbl><input style={inp} placeholder="+359..." value={m.phone || ''} onChange={e => updateMember(i, 'phone', e.target.value)} /></div>
             <button onClick={() => removeMember(i)} style={{ marginTop:20, background:'none', border:'none', color:'#F3A2BE', cursor:'pointer', fontSize:20 }}>×</button>
           </div>
