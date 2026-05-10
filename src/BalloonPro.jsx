@@ -141,6 +141,7 @@ function buildCalc(state) {
 
   const buildTL = (eventTime, isDismantling = false) => {
     if (!eventTime) return []
+
     const bufferFinish = state.bufferFinish || 0
     const bufferBefore = state.bufferBefore || 0
     const setupMin = state.setupMinFixed || 15
@@ -148,76 +149,67 @@ function buildCalc(state) {
     const attachMin = Math.ceil(tAttach / 60)
     const inflateMin = Math.ceil((tInflate + tFoil) / 60)
     const travelMins = state.travelMin || 0
+
     const readyTime = subMins(eventTime, bufferFinish)
 
+    // Градим стъпките в правилен хронологичен ред (от рано към късно)
     const steps = []
 
     if (!isDismantling) {
-      // Снимки
-      if (state.hasPhotoTime) {
-        steps.push({ label: '📸 Снимки', mins: state.photoTime || 10, note: `${state.photoTime || 10} мин` })
+      if (!state.inflateOnSite && inflateMin > 0) {
+        steps.push({ label: '🏠 Надуване (предварително)', mins: inflateMin, note: `${inflateMin} мин` })
       }
-
-      // Услуги от таб 4 (надписи + допълнителни)
+      if (travelMins > 0 || bufferBefore > 0) {
+        steps.push({ label: '🚗 Тръгни', mins: travelMins + bufferBefore, note: travelMins > 0 ? `${state.travelKm || 0} км · ${travelMins} мин${bufferBefore > 0 ? ` + ${bufferBefore} мин резерв` : ''}` : `+ ${bufferBefore} мин резерв` })
+      }
+      if (travelMins > 0) {
+        steps.push({ label: '🚗 Пристигане', mins: 0, note: `${state.travelKm || 0} км` })
+      }
+      steps.push({ label: '📦 Разопаковане', mins: setupMin, note: `${setupMin} мин` })
+      if (state.inflateOnSite && inflateMin > 0) {
+        steps.push({ label: '🎈 Надуване', mins: inflateMin, note: `${inflateMin} мин` })
+      }
+      steps.push({ label: '📍 Закачане на букети', mins: attachMin, note: `${clusters} букета · ${attachMin} мин` })
+      steps.push({ label: '🔧 Финални корекции', mins: adjustMin, note: `${adjustMin} мин` })
       const signItems = (state.signs || []).filter(s => s.timeMin > 0)
       const customItems = (state.customRates || []).filter(r => r.timeMin > 0)
-      const allServices = [...signItems.map(s => ({ desc: s.desc || 'Надпис', mins: s.timeMin })), ...customItems.map(r => ({ desc: r.desc || 'Услуга', mins: r.timeMin }))]
+      const allServices = [
+        ...signItems.map(s => ({ desc: s.desc || 'Надпис', mins: s.timeMin })),
+        ...customItems.map(r => ({ desc: r.desc || 'Услуга', mins: r.timeMin }))
+      ]
       if (allServices.length > 0) {
         const totalServiceMins = allServices.reduce((s, i) => s + i.mins, 0)
         const desc = allServices.map(s => s.desc).join(' + ')
         steps.push({ label: '✍️ Услуги', mins: totalServiceMins, note: `${desc} · ${totalServiceMins} мин` })
       }
-
-      // Финални корекции
-      steps.push({ label: '🔧 Финални корекции', mins: adjustMin, note: `${adjustMin} мин` })
-
-      // Закачане на букети
-      steps.push({ label: '📍 Закачане на букети', mins: attachMin, note: `${clusters} букета · ${attachMin} мин` })
-
-      // Разопаковане
-      steps.push({ label: '📦 Разопаковане', mins: setupMin, note: `${setupMin} мин` })
-
-      // Пристигане (пътуване)
-      if (travelMins > 0) {
-        steps.push({ label: '🚗 Пристигане', mins: travelMins, note: `${state.travelKm || 0} км · ${travelMins} мин` })
+      if (state.hasPhotoTime) {
+        steps.push({ label: '📸 Снимки', mins: state.photoTime || 10, note: `${state.photoTime || 10} мин` })
       }
-
-      // Надуване (ако предварително)
-      if (!state.inflateOnSite && inflateMin > 0) {
-        steps.push({ label: '🏠 Надуване (предварително)', mins: inflateMin, note: `${inflateMin} мин` })
-      }
-
-      // Тръгване + буфер
-      if (travelMins > 0 || bufferBefore > 0) {
-        steps.push({ label: '🚗 Тръгни', mins: bufferBefore, note: bufferBefore > 0 ? `+ ${bufferBefore} мин резерв` : '' })
-      }
-
     } else {
-      // ДЕМОНТАЖ — процент от монтажа
       const dismantlePercent = state.dismantlePercent || 50
-      const mountTotal = setupMin + attachMin + adjustMin + (state.signs||[]).reduce((s,sg)=>s+(sg.timeMin||0),0) + (state.customRates||[]).reduce((s,r)=>s+(r.timeMin||0),0)
+      const mountTotal = setupMin + attachMin + adjustMin +
+        (state.signs || []).reduce((s, sg) => s + (sg.timeMin || 0), 0) +
+        (state.customRates || []).reduce((s, r) => s + (r.timeMin || 0), 0)
       const dismMin = Math.ceil(mountTotal * dismantlePercent / 100)
-
+      if (travelMins > 0 || bufferBefore > 0) {
+        steps.push({ label: '🚗 Тръгни', mins: travelMins + bufferBefore, note: travelMins > 0 ? `${state.travelKm || 0} км · ${travelMins} мин${bufferBefore > 0 ? ` + ${bufferBefore} мин резерв` : ''}` : `+ ${bufferBefore} мин резерв` })
+      }
       if (travelMins > 0) {
-        steps.push({ label: '🚗 Пристигане', mins: travelMins, note: `${state.travelKm || 0} км · ${travelMins} мин` })
+        steps.push({ label: '🚗 Пристигане', mins: 0, note: `${state.travelKm || 0} км` })
       }
       steps.push({ label: '📍 Демонтаж', mins: dismMin, note: `${dismantlePercent}% от монтажа · ${dismMin} мин` })
-      if (travelMins > 0 || bufferBefore > 0) {
-        steps.push({ label: '🚗 Тръгни', mins: bufferBefore, note: bufferBefore > 0 ? `+ ${bufferBefore} мин резерв` : '' })
-      }
     }
 
     // Смятаме назад от readyTime
-    const rows = []
+    let totalMins = steps.reduce((s, step) => s + (step.mins || 0), 0)
     let cur = readyTime
     for (let i = steps.length - 1; i >= 0; i--) {
-      if (steps[i].mins > 0) {
-        cur = subMins(cur, steps[i].mins)
-      }
-      rows.unshift({ time: cur, label: steps[i].label, note: steps[i].note, mins: steps[i].mins })
+      if (steps[i].mins > 0) cur = subMins(cur, steps[i].mins)
+      steps[i].time = cur
     }
 
-    // Финални редове
+    const rows = steps.map(s => ({ time: s.time, label: s.label, note: s.note, mins: s.mins }))
+
     if (!isDismantling) {
       if (bufferFinish > 0) {
         rows.push({ time: readyTime, label: `✅ Готово (${bufferFinish} мин резерв)`, note: '', mins: 0 })

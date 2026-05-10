@@ -116,7 +116,9 @@ export default function BPResult({state, set, setSt, calc}) {
       <div class="section-title">Ценова калкулация</div>
       <table><tbody>${costRows}
         <tr class="total-row"><td>Себестойност (общо)</td><td style="text-align:right">€${calc.totalCost.toFixed(2)}</td></tr>
-        ${margin>0?`<tr><td style="color:#81BFB7">Марж (${margin}%)</td><td style="text-align:right;color:#81BFB7">€${(calc.salePrice-calc.totalCost).toFixed(2)}</td></tr><tr class="price-row"><td>ЦЕНА ЗА КЛИЕНТА</td><td style="text-align:right">€${calc.salePrice.toFixed(2)}</td></tr>`:''}
+        ${margin>0?`<tr><td style="color:#81BFB7">Марж (${margin}%)</td><td style="text-align:right;color:#81BFB7">€${(calc.salePrice-calc.totalCost).toFixed(2)}</td></tr>`:''}
+        ${calc.discountAmount>0?`<tr><td style="color:#F3A2BE">Отстъпка (${state.discountType==='percent'?state.discountValue+'%':'€'+state.discountValue})</td><td style="text-align:right;color:#F3A2BE">-€${calc.discountAmount.toFixed(2)}</td></tr>`:''}
+        <tr class="price-row"><td>ЦЕНА ЗА КЛИЕНТА</td><td style="text-align:right">€${(calc.finalPrice||calc.salePrice).toFixed(2)}</td></tr>
       </tbody></table>
       <div class="section-title">Времева оценка</div>
       <table><tbody>
@@ -282,6 +284,7 @@ export default function BPResult({state, set, setSt, calc}) {
 
       <div style={{background:'#fff',border:`1px solid ${C.l100}`,padding:'18px 20px',marginBottom:2}}>
         <div style={{fontSize:10,fontWeight:600,textTransform:'uppercase',color:C.l500,letterSpacing:'1px',marginBottom:14}}>Timeline — монтаж</div>
+        {setupTL.length > 0 ? setupTL.map((row,i)=><TL key={i} row={row} last={i===setupTL.length-1} />) : <div style={{fontSize:11,color:C.gray}}>Въведи начален час в таб Локация</div>}
       </div>
 
       {dismTL.length > 0 && (
@@ -324,7 +327,38 @@ export default function BPResult({state, set, setSt, calc}) {
           {copied?'✅ Копирано!':'📋 Копирай резултата'}
         </button>
         <button style={{padding:'13px 22px',background:'#fff',color:C.l600,border:`1px solid ${C.l300}`,fontSize:13,fontWeight:600,cursor:'pointer'}} onClick={generatePDF}>
-          📄 Свали PDF
+  📄 Свали PDF
+        </button>
+        <button onClick={()=>{
+          const offerData = {
+            fromCalc: true,
+            items: [
+              ...colorEntries.slice(0,numColors).map((ce,i)=>({
+                description: `Балони ${ce.name||'Цвят '+(i+1)} ${ce.sizeInch}" · ${(calc.colorCounts[i]?.nr||0)} бр`,
+                category: 'Балони',
+                quantity: 1,
+                unit_price: calc.colorCounts[i]?.cost||0,
+                total: calc.colorCounts[i]?.cost||0,
+              })),
+              ...(state.signs||[]).map(s=>({
+                description: s.desc||'Надпис',
+                category: 'Услуга',
+                quantity: s.qty||1,
+                unit_price: s.priceEach||0,
+                total: (s.qty||1)*(s.priceEach||0),
+              })),
+            ],
+            event_date: state.eventDate,
+            event_time: state.eventStart,
+            location: state.location,
+            subtotal: calc.totalCost,
+            total: calc.finalPrice||calc.salePrice,
+            discount: calc.discountAmount||0,
+          }
+          localStorage.setItem('bp_offer_prefill', JSON.stringify(offerData))
+          alert('Данните са готови! Отиди в Оферти → Нова оферта')
+        }} style={{padding:'12px 20px',background:'linear-gradient(135deg,#C6E6E3,#81BFB7)',border:'none',borderRadius:12,color:'#fff',fontWeight:700,cursor:'pointer',fontSize:13}}>
+          📄 Създай оферта
         </button>
       </div>
     </div>
