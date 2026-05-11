@@ -167,6 +167,17 @@ function OfferForm({ offer, prefill, onClose, onSaved }) {
       theme_id: form.theme_id || null,
       client_id: form.client_id || null,
     }
+    const visualUrls = [form.visual_url_1, form.visual_url_2, form.visual_url_3]
+    for (let i = 0; i < 3; i++) {
+      if (visualFiles[i]) {
+        const url = await uploadVisual(visualFiles[i])
+        if (url) visualUrls[i] = url
+      }
+    }
+    payload.visual_url_1 = visualUrls[0] || null
+    payload.visual_url_2 = visualUrls[1] || null
+    payload.visual_url_3 = visualUrls[2] || null
+
     const { clients, ...cleanPayload } = payload
     const { error: dbErr } = offer
       ? await supabase.from('offers').update(cleanPayload).eq('id', offer.id)
