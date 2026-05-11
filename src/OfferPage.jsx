@@ -167,9 +167,10 @@ function OfferForm({ offer, prefill, onClose, onSaved }) {
       theme_id: form.theme_id || null,
       client_id: form.client_id || null,
     }
+    const { clients, ...cleanPayload } = payload
     const { error: dbErr } = offer
-      ? await supabase.from('offers').update(payload).eq('id', offer.id)
-      : await supabase.from('offers').insert([payload])
+      ? await supabase.from('offers').update(cleanPayload).eq('id', offer.id)
+      : await supabase.from('offers').insert([cleanPayload])
     setSaving(false)
     if (dbErr) { setError('Грешка: ' + dbErr.message); return }
     onSaved()
