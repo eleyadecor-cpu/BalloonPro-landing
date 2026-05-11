@@ -65,19 +65,29 @@ function OfferForm({ offer, prefill, onClose, onSaved }) {
         event_date: offer.event_date ? formatDate(offer.event_date) : '',
         deposit_due_date: offer.deposit_due_date ? formatDate(offer.deposit_due_date) : '',
         valid_until: offer.valid_until ? formatDate(offer.valid_until) : '',
-        items: offer.items || []
+        items: offer.items || [],
+        show_prices: offer.show_prices || false,
       })
     } else if (prefill) {
       setForm(p => ({
         ...p,
-        client_id: prefill.client_id || '',
-        inquiry_id: prefill.id || '',
-        event_date: prefill.event_date ? formatDate(prefill.event_date) : '',
-        event_time: prefill.event_start || '',
+        inquiry_id: prefill.inquiry_id || prefill.id || '',
+        event_date: prefill.event_date ? (prefill.event_date.includes('-') ? prefill.event_date.split('-').reverse().join('.') : prefill.event_date) : '',
+        event_time: prefill.event_time || prefill.event_start || '',
         event_type: prefill.event_type || '',
         location: prefill.location || '',
         guest_count: prefill.guest_count || '',
+        notes: prefill.notes || '',
+        items: prefill.items || [],
+        subtotal: prefill.subtotal || 0,
+        total: prefill.total || 0,
+        discount: prefill.discount || 0,
+        show_prices: false,
       }))
+      if (prefill.client_name) {
+        supabase.from('clients').select('id,name').ilike('name', `%${prefill.client_name}%`).limit(1)
+          .then(({ data }) => { if (data?.[0]) setForm(p => ({ ...p, client_id: data[0].id })) })
+      }
     }
   }, [offer, prefill])
 
