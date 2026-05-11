@@ -46,13 +46,16 @@ function OfferForm({ offer, prefill, onClose, onSaved }) {
     delivery:false, delivery_price:0,
     installation:false, installation_price:0,
     dismantling:false, dismantling_price:0,
-    status:'draft', notes:''
+    status:'draft', notes:'',
+    visual_url_1:'', visual_url_2:'', visual_url_3:''
   })
   const [clients, setClients] = useState([])
   const [inquiries, setInquiries] = useState([])
   const [themes, setThemes] = useState([])
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
+  const [visualFiles, setVisualFiles] = useState([null, null, null])
+  const [visualPreviews, setVisualPreviews] = useState([null, null, null])
 
   useEffect(() => {
     loadData()
@@ -90,6 +93,25 @@ function OfferForm({ offer, prefill, onClose, onSaved }) {
   }
 
   const set = (k, v) => setForm(p => ({ ...p, [k]: v }))
+  const handleVisual = (e, index) => {
+    const file = e.target.files[0]
+    if (!file) return
+    const newFiles = [...visualFiles]
+    newFiles[index] = file
+    setVisualFiles(newFiles)
+    const newPreviews = [...visualPreviews]
+    newPreviews[index] = URL.createObjectURL(file)
+    setVisualPreviews(newPreviews)
+  }
+
+  const uploadVisual = async (file) => {
+    const ext = file.name.split('.').pop()
+    const path = `visuals/${Date.now()}.${ext}`
+    const { error } = await supabase.storage.from('inquiries').upload(path, file)
+    if (error) return null
+    const { data } = supabase.storage.from('inquiries').getPublicUrl(path)
+    return data.publicUrl
+  }
 
   const addItem = () => set('items', [...form.items, { description:'', category:'Декорация', quantity:1, unit_price:0, total:0 }])
 
@@ -303,7 +325,21 @@ function OfferForm({ offer, prefill, onClose, onSaved }) {
           <textarea style={{ ...inp2, height:80, resize:'vertical' }} placeholder="Специални условия, забележки..." value={form.notes} onChange={e => set('notes', e.target.value)} />
         </div>
       </div>
-
+      {/* ВИЗУАЛИЗАЦИИ */}
+      <div style={{ background:'#fff', border:'1px solid #C6E6E3', padding:'20px', marginBottom:12, borderRadius:16 }}>
+        <div style={{ fontSize:11, fontWeight:700, color:'#81BFB7', textTransform:'uppercase', letterSpacing:1, marginBottom:16 }}>🎨 Визуализации (до 3)</div>
+        <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:12 }}>
+          {[0,1,2].map(i => (
+            <div key={i} style={{ background:'#F0F9F8', borderRadius:10, padding:10, border:'1px solid #C6E6E3' }}>
+              <div style={{ fontSize:11, color:'#81BFB7', fontWeight:700, marginBottom:6 }}>Визуализация {i+1}</div>
+              <input type="file" accept="image/*" onChange={e => handleVisual(e, i)} style={{ fontSize:11, marginBottom:6, width:'100%' }} />
+              {visualPreviews[i] && (
+                <img src={visualPreviews[i]} alt={`visual ${i+1}`} style={{ width:'100%', height:120, objectFit:'cover', borderRadius:8 }} />
+              )}
+            </div>
+          ))}
+        </div>
+      </div>      
       {error && <div style={{ color:'#c0392b', fontSize:12, padding:'8px 12px', background:'#FFD3DD', marginBottom:8, borderRadius:8 }}>{error}</div>}
 
       <div style={{ display:'flex', gap:10 }}>
