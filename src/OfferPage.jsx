@@ -506,7 +506,7 @@ export default function OfferPage({ onBack, prefillInquiry }) {
               * { margin:0; padding:0; box-sizing:border-box; }
               body { font-family:'Lato',sans-serif; color:#3a2a35; background:#fff; font-size:13px; }
               .header {
-                background: linear-gradient(135deg, #FFD3DD 0%, #C6E6E3 100%);
+                background: linear-gradient(135deg, #F3A2BE 0%, #81BFB7 100%);
                 padding: 32px 40px 24px;
                 display: flex;
                 justify-content: space-between;
