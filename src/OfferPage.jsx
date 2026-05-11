@@ -595,7 +595,17 @@ export default function OfferPage({ onBack, prefillInquiry }) {
             <div class="section-title" style="margin-top:20px">Бележки</div>
             <div class="notes-box">${selected.notes}</div>`:''}
           </div>
+            ${selected.notes?`
+            <div class="section-title" style="margin-top:20px">Бележки</div>
+            <div class="notes-box">${selected.notes}</div>`:''}
 
+            ${(selected.visual_url_1||selected.visual_url_2||selected.visual_url_3)?`
+            <div class="section-title" style="margin-top:20px">Визуализации</div>
+            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:8px">
+              ${[selected.visual_url_1,selected.visual_url_2,selected.visual_url_3].filter(Boolean).map(url=>`
+                <img src="${url}" style="width:100%;height:180px;object-fit:cover;border-radius:8px;border:1px solid #FFD3DD" />`).join('')}
+            </div>`:''}
+          </div>  
           <div class="footer">
             ${s.offer_footer_text||'Благодарим Ви за доверието! 🌸'}<br>
             <strong>Eleya Decor Studio</strong> · ${s.company_email||'eleya.decor@gmail.com'} · ${s.company_phone||'+359 877 163 171'}
