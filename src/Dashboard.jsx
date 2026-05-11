@@ -8,6 +8,7 @@ import InventoryPage from './InventoryPage.jsx';
 import { supabase } from './supabaseClient';
 import ThemesPage from './ThemesPage.jsx';
 import OfferPage from './OfferPage.jsx';
+import CalculatorPage from './CalculatorPage.jsx'
 
 const DAYS = ['П','В','С','Ч','П','С','Н'];
 const MONTHS = ['Януари','Февруари','Март','Април','Май','Юни','Юли','Август','Септември','Октомври','Ноември','Декември'];
@@ -32,6 +33,8 @@ const Dashboard = () => {
   const weekDays = ['Пет','Съб','Нед','Пон','Вто','Сря','Чет'];
   const [showThemes, setShowThemes] = useState(false);
   const [showOffers, setShowOffers] = useState(false);
+  const [showCalculator, setShowCalculator] = useState(false)
+  const [calcOfferData, setCalcOfferData] = useState(null)
 
   useEffect(() => {
     fetch('https://api.open-meteo.com/v1/forecast?latitude=42.62&longitude=25.4&current=temperature_2m,weathercode,windspeed_10m&daily=weathercode,temperature_2m_max,temperature_2m_min&timezone=Europe%2FSofia&forecast_days=7')
@@ -92,7 +95,7 @@ const Dashboard = () => {
     { label: 'Финанси',    icon: '💰', g: ['#FFD3DD','#F3A2BE'] },
     { label: 'Склад', icon: '📦', g: ['#C6E6E3','#81BFB7'], action: () => setShowInventory(true) },
     { label: 'Теми', icon: '🎨', g: ['#FFD3DD','#F3A2BE'], action: () => setShowThemes(true) },
-    { label: 'Калкулатор', icon: null, g: null, action: () => setIsCalcOpen(true), light: true },
+    { label: 'Калкулатор', icon: null, g: null, action: () => setShowCalculator(true), light: true },
   ];
 
   const Popup = ({ children, onClose, maxW = '1000px' }) => (
@@ -113,6 +116,7 @@ const Dashboard = () => {
   if (showInventory) return <InventoryPage onBack={() => setShowInventory(false)} />
   if (showThemes) return <ThemesPage onBack={() => setShowThemes(false)} />
   if (showOffers) return <OfferPage onBack={() => setShowOffers(false)} />
+  if (showCalculator) return <CalculatorPage onBack={() => setShowCalculator(false)} onCreateOffer={(data) => { setCalcOfferData(data); setShowCalculator(false); setShowOffers(true) }} />
   return (
     <div style={{ padding:24, background:'linear-gradient(135deg,#FFD3DD 0%,#F0F9F8 45%,#C6E6E3 100%)', minHeight:'100vh', fontFamily:'sans-serif' }}>
 

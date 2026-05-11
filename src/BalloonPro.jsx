@@ -240,7 +240,7 @@ function buildCalc(state) {
   }
 }
 
-export default function BalloonPro() {
+export default function BalloonPro({ onCreateOffer }) {
   const [step, setStep] = useState(0)
   const [state, setState] = useState(INIT)
   const set = (k, v) => setState(prev => ({ ...prev, [k]: v }))
@@ -260,7 +260,7 @@ export default function BalloonPro() {
     <BPServices state={state} set={set} calc={calc} summaryData={summaryData} />,
     <BPEvent    state={state} set={set} calc={calc} summaryData={summaryData} />,
     <BPRates    state={state} set={set} calc={calc} summaryData={summaryData} />,
-    <BPResult   state={state} set={set} setSt={setState} calc={calc} summaryData={summaryData} />,
+    <BPResult   state={state} set={set} setSt={setState} calc={calc} summaryData={summaryData} onCreateOffer={onCreateOffer} />,
   ]
 
   const steps = ['1. Основа', '2. Цветове', '3. Акценти', '4. Услуги', '5. Локация', '6. Цени', '7. Финал']
