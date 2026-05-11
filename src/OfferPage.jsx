@@ -137,7 +137,7 @@ function OfferForm({ offer, prefill, onClose, onSaved }) {
     setForm(p => {
       const services = (p.delivery?+p.delivery_price:0) + (p.installation?+p.installation_price:0) + (p.dismantling?+p.dismantling_price:0)
       const subtotal = updated.reduce((s,i) => s + (i.total||0), 0) + services
-      const total = subtotal - (+p.discount||0)
+      const total = Math.max(0, subtotal - (+p.discount||0))
       return { ...p, items: updated, subtotal, total }
     })
   }
@@ -152,7 +152,8 @@ function OfferForm({ offer, prefill, onClose, onSaved }) {
     const itemsTotal = items.reduce((s,i) => s + (i.total||0), 0)
     const services = (delivery?+deliveryPrice:0) + (installation?+installationPrice:0) + (dismantling?+dismantlingPrice:0)
     const subtotal = itemsTotal + services
-    const total = subtotal - (+discount||0)
+    const discountNum = +discount || 0
+    const total = Math.max(0, subtotal - discountNum)
     setForm(p => ({ ...p, subtotal, total }))
   }
 
