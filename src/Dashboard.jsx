@@ -200,7 +200,7 @@ const Dashboard = () => {
             <div style={{ fontSize:10, fontWeight:700, color:'#F3A2BE', textTransform:'uppercase', letterSpacing:1, marginBottom:10 }}>Последни запитвания</div>
             {inquiries.length === 0 && <div style={{ fontSize:11, color:'#81BFB7', textAlign:'center' }}>Няма запитвания</div>}
             {inquiries.map(inq => (
-              <div key={inq.id} style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:8, paddingBottom:8, borderBottom:'1px solid rgba(198,230,227,0.3)' }}>
+              <div key={inq.id} onClick={() => setLeftTab('inquiries')} style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:8, paddingBottom:8, borderBottom:'1px solid rgba(198,230,227,0.3)', cursor:'pointer' }}>
                 <div>
                   <div style={{ fontSize:12, fontWeight:700, color:'#3a2a35' }}>{inq.client_name}</div>
                   <div style={{ fontSize:10, color:'#81BFB7' }}>{formatDate(inq.event_date)} · {inq.event_type||'—'}</div>
