@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { C, pill, pillLight } from './shared.jsx'
 import { supabase } from './supabaseClient'
-
+import InquiryForm from './InquiryForm.jsx'
 const STATUS = {
   new:       { label: 'Ново',       bg: '#FFD3DD', color: '#5a2d3a' },
   reviewed:  { label: 'Прегледано', bg: '#C6E6E3', color: '#2a5450' },
