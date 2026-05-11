@@ -15,7 +15,7 @@ function TL({row, last}) {
   )
 }
 
-export default function BPResult({state, set, setSt, calc, summaryData, onCreateOffer}) {
+export default function BPResult({state, set, setSt, calc, summaryData, onCreateOffer, inquiry}) {
   const {colorEntries, numColors, accents, foilBalloons, signs, customRates, rates, margin, inflateOnSite, location, hasPhotoTime, photoTime, bufferFinish, bufferBefore, travelMin, travelKm, fuelPerLiter, fuelPer100km, amortPerKm, eventDate, eventStart, eventEnd, dismSameDay, dismDate, dismTime} = state
   const {clusters, clustersPerColor, colorCounts, accentCounts, tInflate, tFoil, tAssembly, tAttach, tSign, tCustExtra, tOnsite, tPrep, tDismantle, tTotal, matCost, laborTotal, totalCost, salePrice, setupTL, dismTL, lInfl, lInst, lDism, lTrans, fuelCost, amortCost} = calc
   
@@ -332,48 +332,67 @@ export default function BPResult({state, set, setSt, calc, summaryData, onCreate
         <button onClick={()=>{
           const offerData = {
             fromCalc: true,
+            inquiry_id: inquiry?.id || null,
+            client_name: inquiry?.client_name || '',
+            client_phone: inquiry?.client_phone || '',
+            client_email: inquiry?.client_email || '',
+            event_date: state.eventDate || inquiry?.event_date || '',
+            event_time: state.eventStart || inquiry?.event_start?.slice(0,5) || '',
+            event_type: inquiry?.event_type || '',
+            location: state.location || inquiry?.location || '',
+            guest_count: inquiry?.guest_count || '',
+            notes: inquiry?.notes || '',
             items: [
               ...colorEntries.slice(0,numColors).map((ce,i)=>({
-                description: `Балони ${ce.name||'Цвят '+(i+1)} ${ce.sizeInch}" · ${(calc.colorCounts[i]?.nr||0)} бр`,
+                description: `Балони ${ce.name||'Цвят '+(i+1)} ${ce.sizeInch}"`,
                 category: 'Балони',
-                quantity: 1,
-                unit_price: +(calc.colorCounts[i]?.cost||0).toFixed(2),
-                total: +(calc.colorCounts[i]?.cost||0).toFixed(2),
+                quantity: calc.colorCounts[i]?.nr || 0,
+                unit_price: 0,
+                total: 0,
               })),
-              ...(state.signs||[]).filter(s=>s.priceEach>0).map(s=>({
-                description: s.desc||'Надпис',
-                category: 'Услуга',
-                quantity: s.qty||1,
-                unit_price: s.priceEach||0,
-                total: (s.qty||1)*(s.priceEach||0),
+              ...(state.accents||[]).map(ac=>({
+                description: `Акценти ${ac.name||ac.sizeInch+'"'}`,
+                category: 'Балони',
+                quantity: 0,
+                unit_price: 0,
+                total: 0,
               })),
-              ...(state.customRates||[]).filter(r=>r.price>0).map(r=>({
-                description: r.desc||'Услуга',
-                category: 'Услуга',
-                quantity: r.qty||1,
-                unit_price: r.price||0,
-                total: (r.qty||1)*(r.price||0),
-              })),
-              ...(state.foilBalloons||[]).filter(f=>f.price>0).map(f=>({
+              ...(state.foilBalloons||[]).map(f=>({
                 description: f.name||'Фолио балон',
                 category: 'Балони',
                 quantity: f.qty||1,
-                unit_price: f.price||0,
-                total: (f.qty||1)*(f.price||0),
+                unit_price: 0,
+                total: 0,
               })),
-            ],
-            event_date: state.eventDate,
-            event_time: state.eventStart,
-            location: state.location,
+              ...(state.signs||[]).map(s=>({
+                description: s.desc||'Надпис',
+                category: 'Услуга',
+                quantity: s.qty||1,
+                unit_price: 0,
+                total: 0,
+              })),
+              ...(state.customRates||[]).filter(r=>r.desc).map(r=>({
+                description: r.desc,
+                category: 'Услуга',
+                quantity: r.qty||1,
+                unit_price: 0,
+                total: 0,
+              })),
+              ...(state.rates?.inflation?.enabled || state.rates?.install?.enabled ? [{
+                description: 'Монтаж и демонтаж',
+                category: 'Услуга',
+                quantity: 1,
+                unit_price: 0,
+                total: 0,
+              }] : []),
+            ].filter(i => i.description),
             subtotal: +(calc.finalPrice||calc.salePrice).toFixed(2),
             total: +(calc.finalPrice||calc.salePrice).toFixed(2),
             discount: +(calc.discountAmount||0).toFixed(2),
+            show_prices: false,
           }
           if (onCreateOffer) {
             onCreateOffer(offerData)
-          } else {
-            localStorage.setItem('bp_offer_prefill', JSON.stringify(offerData))
-            alert('Данните са готови! Отиди в Оферти → Нова оферта')
           }
         }} style={{padding:'12px 20px',background:'linear-gradient(135deg,#C6E6E3,#81BFB7)',border:'none',borderRadius:12,color:'#fff',fontWeight:700,cursor:'pointer',fontSize:13}}>
           📄 Създай оферта

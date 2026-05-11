@@ -99,15 +99,15 @@ const Dashboard = () => {
   if (showClients) return <ClientsPage onBack={() => setShowClients(false)} />
   if (showInventory) return <InventoryPage onBack={() => setShowInventory(false)} />
   if (showThemes) return <ThemesPage onBack={() => setShowThemes(false)} />
-  if (showOffers) return <OfferPage onBack={() => { setShowOffers(false); setOpenNewOffer(false); setCalcOfferData(null) }} prefillInquiry={calcOfferData} openNew={openNewOffer} />
-  if (showCalculator) return <CalculatorPage onBack={() => setShowCalculator(false)} onCreateOffer={(data) => { setCalcOfferData(data); setShowCalculator(false); setShowOffers(true) }} />
+  if (showOffers) return <OfferPage onBack={() => { setShowOffers(false); setOpenNewOffer(false); setCalcOfferData(null) }} prefillInquiry={calcOfferData} openNew={openNewOffer || !!calcOfferData} />
+  if (showCalculator) return <CalculatorPage inquiry={calcOfferData} onBack={() => { setShowCalculator(false); setCalcOfferData(null) }} onCreateOffer={(data) => { setCalcOfferData(data); setShowCalculator(false); setShowOffers(true) }} />
   if (showInquiries) return (
     <div style={{ padding:24, background:'linear-gradient(135deg,#FFD3DD 0%,#F0F9F8 45%,#C6E6E3 100%)', minHeight:'100vh', fontFamily:'sans-serif' }}>
       <div style={{ display:'flex', alignItems:'center', gap:12, marginBottom:20 }}>
         <button onClick={() => setShowInquiries(false)} style={{ padding:'8px 16px', background:'rgba(255,255,255,0.8)', border:'1px solid #C6E6E3', borderRadius:12, color:'#81BFB7', fontWeight:700, cursor:'pointer' }}>← Табло</button>
         <h1 style={{ color:'#3a2a35', margin:0, fontSize:24, fontWeight:900 }}>📝 Запитвания</h1>
       </div>
-      <InquiryList onOpenCalc={() => setShowCalculator(true)} />
+      <InquiryList onOpenCalc={(inq) => { setCalcOfferData(inq); setShowCalculator(true); setShowInquiries(false) }} />
     </div>
   )
   if (showTasks) return (

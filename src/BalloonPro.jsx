@@ -240,11 +240,19 @@ function buildCalc(state) {
   }
 }
 
-export default function BalloonPro({ onCreateOffer }) {
+export default function BalloonPro({ onCreateOffer, inquiry }) {
   const [step, setStep] = useState(0)
   const [state, setState] = useState(INIT)
   const set = (k, v) => setState(prev => ({ ...prev, [k]: v }))
   const calc = buildCalc(state)
+  // Предварително попълване от запитване
+  React.useEffect(() => {
+    if (inquiry) {
+      if (inquiry.event_date) setState(p => ({ ...p, eventDate: inquiry.event_date }))
+      if (inquiry.event_start) setState(p => ({ ...p, eventStart: inquiry.event_start.slice(0,5) }))
+      if (inquiry.location) setState(p => ({ ...p, location: inquiry.location }))
+    }
+  }, [inquiry])
 
   const summaryData = {
     'Тип': state.decorType === 'organic' ? 'Органик' : 'Класик',
@@ -260,7 +268,7 @@ export default function BalloonPro({ onCreateOffer }) {
     <BPServices state={state} set={set} calc={calc} summaryData={summaryData} />,
     <BPEvent    state={state} set={set} calc={calc} summaryData={summaryData} />,
     <BPRates    state={state} set={set} calc={calc} summaryData={summaryData} />,
-    <BPResult   state={state} set={set} setSt={setState} calc={calc} summaryData={summaryData} onCreateOffer={onCreateOffer} />,
+    <BPResult   state={state} set={set} setSt={setState} calc={calc} summaryData={summaryData} onCreateOffer={onCreateOffer} inquiry={inquiry} />,
   ]
 
   const steps = ['1. Основа', '2. Цветове', '3. Акценти', '4. Услуги', '5. Локация', '6. Цени', '7. Финал']
