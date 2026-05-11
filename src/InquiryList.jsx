@@ -22,6 +22,7 @@ export default function InquiryList({ onOpenCalc }) {
   const [filter, setFilter] = useState('all')
   const [selected, setSelected] = useState(null)
   const [isEditing, setIsEditing] = useState(false)
+  const [editInquiry, setEditInquiry] = useState(null)
 
   useEffect(() => { load() }, [])
 
@@ -121,7 +122,7 @@ export default function InquiryList({ onOpenCalc }) {
 
           {/* ДЕЙСТВИЯ */}
           <div style={{ display:'flex', flexDirection:'row', gap:8 }}>
-            <button onClick={() => setIsEditing(true)} style={{ flex:1, padding:'10px 6px', background:'#C6E6E3', color:'#2a5450', border:'none', borderRadius:14, fontWeight:800, cursor:'pointer', fontSize:11, textAlign:'center' }}>
+            <button onClick={() => { setEditInquiry(selected); setIsEditing(true) }} style={{ flex:1, padding:'10px 6px', background:'#C6E6E3', color:'#2a5450', border:'none', borderRadius:14, fontWeight:800, cursor:'pointer', fontSize:11, textAlign:'center' }}>
               ✏️ Редактирай
             </button>
             <button onClick={() => { onOpenCalc(selected); setSelected(null) }} style={{ flex:1, padding:'10px 6px', background:'#F3A2BE', color:'#fff', border:'none', borderRadius:14, fontWeight:800, cursor:'pointer', fontSize:11, textAlign:'center' }}>
@@ -136,6 +137,19 @@ export default function InquiryList({ onOpenCalc }) {
           </div>
         </div>
       </div>
+      {isEditing && editInquiry && (
+        <div style={{ position:'fixed', top:0, left:0, width:'100%', height:'100%', background:'rgba(58,42,53,0.6)', display:'flex', justifyContent:'center', alignItems:'center', zIndex:3000, padding:20 }}>
+          <div style={{ background:'#F0F9F8', borderRadius:32, width:'90%', maxWidth:800, maxHeight:'90vh', overflowY:'auto', boxShadow:'0 30px 60px rgba(0,0,0,0.3)' }}>
+            <div style={{ padding:'20px 32px', borderBottom:'1px solid #FFD3DD', display:'flex', justifyContent:'space-between', alignItems:'center', background:'rgba(255,255,255,0.9)', borderTopLeftRadius:32, borderTopRightRadius:32 }}>
+              <h2 style={{ color:'#3a2a35', fontWeight:900, margin:0 }}>✏️ Редактирай запитване</h2>
+              <button onClick={() => { setIsEditing(false); setEditInquiry(null) }} style={{ border:'none', background:'#FFD3DD', borderRadius:'50%', width:36, height:36, cursor:'pointer', fontSize:18 }}>✕</button>
+            </div>
+            <div style={{ padding:'20px 32px 32px' }}>
+              <InquiryForm editInquiry={editInquiry} onClose={() => { setIsEditing(false); setEditInquiry(null) }} onSaved={() => { load(); setSelected(null) }} />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 
