@@ -1063,7 +1063,7 @@ export default function NewCalculator({ onBack, inquiry, onCreateOffer }) {
       if (!dismTime) return []
 
       const rows = []
-      let cur = endTime
+      let cur = dismTime
       for (let i = 0; i < steps.length; i++) {
         if (steps[i].mins > 0) cur = subMins(cur, steps[i].mins)
         rows.push({ time: cur, label: steps[i].label, note: steps[i].note })
