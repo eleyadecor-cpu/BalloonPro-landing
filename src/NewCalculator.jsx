@@ -740,11 +740,179 @@ export default function NewCalculator({ onBack, inquiry, onCreateOffer }) {
     )
   }
 
+  const Tab5 = () => {
+    const t = settings.times || {}
+    const f = settings.finances || {}
+
+    // Надуване — изчисляваме по размер на балоните
+    const INFLATE_SEC = { 5: 8, 10: 22, 11: 24, 12: 26, 16: 35, 18: 40, 24: 55, 36: 80 }
+
+    const calcClusters = (lengthCm, sizeInch, perCluster) => {
+      const price = balloonPrices.find(p => p.size_inch === sizeInch)
+      const diamCm = price?.size_cm || (sizeInch * 2.54)
+      const factor = perCluster <= 4 ? 4.8 : 6.3
+      return Math.ceil((lengthCm / diamCm) * factor / perCluster)
+    }
+
+    // Изчисляваме всички балони
+    let totalBalloons = { main: {}, small: 0, large: 0 }
+    let totalClusters = 0
+    let totalStuffing = 0
+
+    state.garlands.forEach(g => {
+      g.templates.forEach(t2 => {
+        const clusters = t2.cluster_count || calcClusters(g.length_cm, t2.main_size_inch, t2.main_per_cluster)
+        totalClusters += clusters
+        const mainCount = clusters * t2.main_per_cluster
+        totalBalloons.main[t2.main_size_inch] = (totalBalloons.main[t2.main_size_inch]||0) + mainCount
+        if (t2.has_small) totalBalloons.small += clusters * t2.small_per_cluster
+        if (t2.has_large) totalBalloons.large += clusters * t2.large_per_cluster
+        if (t2.stuffing_percent > 0) {
+          totalStuffing += Math.ceil(mainCount * t2.stuffing_percent / 100)
+          if (t2.has_small) totalStuffing += Math.ceil(clusters * t2.small_per_cluster * t2.stuffing_percent / 100)
+        }
+      })
+    })
+
+    // Надуване секунди
+    let inflateSecMain = Object.entries(totalBalloons.main).reduce((s,[size,count]) => s + count * (INFLATE_SEC[+size]||22), 0)
+    let inflateSecSmall = totalBalloons.small * (INFLATE_SEC[5]||8)
+    let inflateSecLarge = totalBalloons.large * (INFLATE_SEC[18]||40)
+    let totalInflateSec = inflateSecMain + inflateSecSmall + inflateSecLarge
+    let totalInflateMin = Math.ceil(totalInflateSec / 60)
+
+    // Stuffing секунди
+    let stuffingMin = Math.ceil(totalStuffing * (t.stuffing_sec_per_balloon||20) / 60)
+
+    // Сглобяване кластри
+    let clusterAssemblyMin = Math.ceil(totalClusters * (t.cluster_assembly_sec||45) / 60)
+
+    // Закачане кластри на локация
+    let clusterAttachMin = Math.ceil(totalClusters * (t.cluster_attachment_sec||45) / 60)
+
+    // Допълнения
+    let extrasHomeMin = (state.extras||[]).reduce((s,e) => s + (e.prep_at_home ? (+e.prep_home_min||0) : 0), 0)
+    let extrasLocationMin = (state.extras||[]).reduce((s,e) => {
+      let total = 0
+      if (e.prep_at_location) total += (+e.prep_location_min||0)
+      total += (+e.placement_min||0)
+      return s + total
+    }, 0)
+    let extrasSignsMin = (state.extras||[]).filter(e=>e.prep_at_home).reduce((s,e) => s + (+e.prep_home_min||0), 0)
+
+    // ВКЪЩИ
+    const homeRows = [
+      { label:'📞 Комуникация', min: (+t.consultation_min||0) + (+t.followup_min||0), rate: f.rate_consultation||8 },
+      { label:'📋 Подготовка поръчка', min: (+t.stock_check_min||0) + (+t.order_min||0) + (+t.delivery_receive_min||0), rate: f.rate_preparation||8 },
+      { label:'🔀 Сортиране балони', min: t.sorting_min||10, rate: f.rate_inflation||10 },
+      { label:'✍️ Изработка допълнения', min: extrasHomeMin, rate: f.rate_preparation||8 },
+      { label:'🎈 Stuffing (балон в балон)', min: stuffingMin, rate: f.rate_inflation||10 },
+      { label:'💨 Надуване', min: totalInflateMin, rate: f.rate_inflation||10 },
+      { label:'🔗 Сглобяване кластри', min: clusterAssemblyMin, rate: f.rate_inflation||10 },
+      { label:'📦 Зареждане на кола', min: t.car_loading_min||15, rate: f.rate_installation||12 },
+    ].filter(r => r.min > 0)
+
+    // НА ЛОКАЦИЯ
+    const locationRows = [
+      { label:'📦 Разопаковане', min: t.unpacking_min||15, rate: f.rate_installation||12 },
+      { label:'🏛️ Подготовка пространство', min: t.space_prep_min||10, rate: f.rate_installation||12 },
+      { label:'🏗️ Сглобяване арка', min: t.arch_assembly_min||15, rate: f.rate_installation||12 },
+      { label:'🎀 Поставяне покривало', min: t.cover_placement_min||5, rate: f.rate_installation||12 },
+      { label:'📍 Закачане кластри', min: clusterAttachMin, rate: f.rate_installation||12 },
+      { label:'✨ Допълнения на локация', min: extrasLocationMin, rate: f.rate_installation||12 },
+      { label:'🔧 Финални корекции', min: t.final_corrections_min||10, rate: f.rate_installation||12 },
+      { label:'📸 Снимки', min: t.photo_time_min||10, rate: f.rate_installation||12 },
+    ].filter(r => r.min > 0)
+
+    const calcCost = (min, rate) => (min / 60) * rate
+
+    const homeTotalMin = homeRows.reduce((s,r) => s + r.min, 0)
+    const homeTotalCost = homeRows.reduce((s,r) => s + calcCost(r.min, r.rate), 0)
+    const locationTotalMin = locationRows.reduce((s,r) => s + r.min, 0)
+    const locationTotalCost = locationRows.reduce((s,r) => s + calcCost(r.min, r.rate), 0)
+
+    const dismantlePercent = (t.dismantling_percent||50) / 100
+    const dismantleMin = Math.ceil(locationTotalMin * dismantlePercent)
+    const dismantleCost = (dismantleMin / 60) * (f.rate_dismantling||10)
+
+    const grandTotalMin = homeTotalMin + locationTotalMin + dismantleMin
+    const grandTotalCost = homeTotalCost + locationTotalCost + dismantleCost
+
+    const LaborRow = ({row}) => (
+      <div style={{display:'grid',gridTemplateColumns:'2fr 1fr 1fr',gap:8,padding:'8px 0',borderBottom:'1px solid #F0F9F8',fontSize:13,alignItems:'center'}}>
+        <div style={{color:'#3a2a35'}}>{row.label}</div>
+        <div style={{color:'#81BFB7',textAlign:'right'}}>{row.min} мин</div>
+        <div style={{fontWeight:700,color:'#F3A2BE',textAlign:'right'}}>€{calcCost(row.min,row.rate).toFixed(2)}</div>
+      </div>
+    )
+
+    const TotalRow = ({label, min, cost, color='#F3A2BE'}) => (
+      <div style={{display:'grid',gridTemplateColumns:'2fr 1fr 1fr',gap:8,padding:'10px 12px',background:'#F0F9F8',borderRadius:8,fontSize:14,fontWeight:700,marginTop:8}}>
+        <div style={{color:'#3a2a35'}}>{label}</div>
+        <div style={{color:'#81BFB7',textAlign:'right'}}>{min} мин</div>
+        <div style={{color,textAlign:'right'}}>€{cost.toFixed(2)}</div>
+      </div>
+    )
+
+    return (
+      <div>
+        {/* ВКЪЩИ */}
+        <div style={{background:'#fff',border:'2px solid #FFD3DD',borderRadius:16,padding:20,marginBottom:16}}>
+          <div style={{fontSize:12,fontWeight:900,color:'#F3A2BE',textTransform:'uppercase',letterSpacing:1.5,marginBottom:16,paddingBottom:8,borderBottom:'2px solid #FFD3DD'}}>
+            🏠 Подготовка вкъщи / студио
+          </div>
+          <div style={{display:'grid',gridTemplateColumns:'2fr 1fr 1fr',gap:8,marginBottom:8}}>
+            {['Дейност','Времe','Разход'].map(h=>(
+              <div key={h} style={{fontSize:10,fontWeight:700,color:'#81BFB7',textTransform:'uppercase',letterSpacing:1,textAlign:h==='Дейност'?'left':'right'}}>{h}</div>
+            ))}
+          </div>
+          {homeRows.map((r,i) => <LaborRow key={i} row={r} />)}
+          <TotalRow label="Общо вкъщи" min={homeTotalMin} cost={homeTotalCost} />
+        </div>
+
+        {/* НА ЛОКАЦИЯ */}
+        <div style={{background:'#fff',border:'2px solid #C6E6E3',borderRadius:16,padding:20,marginBottom:16}}>
+          <div style={{fontSize:12,fontWeight:900,color:'#81BFB7',textTransform:'uppercase',letterSpacing:1.5,marginBottom:16,paddingBottom:8,borderBottom:'2px solid #C6E6E3'}}>
+            📍 На локация — монтаж
+          </div>
+          <div style={{display:'grid',gridTemplateColumns:'2fr 1fr 1fr',gap:8,marginBottom:8}}>
+            {['Дейност','Времe','Разход'].map(h=>(
+              <div key={h} style={{fontSize:10,fontWeight:700,color:'#81BFB7',textTransform:'uppercase',letterSpacing:1,textAlign:h==='Дейност'?'left':'right'}}>{h}</div>
+            ))}
+          </div>
+          {locationRows.map((r,i) => <LaborRow key={i} row={r} />)}
+          <TotalRow label="Общо монтаж" min={locationTotalMin} cost={locationTotalCost} color='#81BFB7' />
+        </div>
+
+        {/* ДЕМОНТАЖ */}
+        <div style={{background:'#fff',border:'2px solid #C6E6E3',borderRadius:16,padding:20,marginBottom:16}}>
+          <div style={{fontSize:12,fontWeight:900,color:'#81BFB7',textTransform:'uppercase',letterSpacing:1.5,marginBottom:12,paddingBottom:8,borderBottom:'2px solid #C6E6E3'}}>
+            📦 Демонтаж ({t.dismantling_percent||50}% от монтажа)
+          </div>
+          <TotalRow label="Демонтаж" min={dismantleMin} cost={dismantleCost} color='#81BFB7' />
+        </div>
+
+        {/* ОБЩО */}
+        <div style={{background:'linear-gradient(135deg,#FFD3DD,#F3A2BE)',borderRadius:16,padding:20}}>
+          <div style={{display:'grid',gridTemplateColumns:'2fr 1fr 1fr',gap:8}}>
+            <div style={{fontSize:14,fontWeight:900,color:'#fff'}}>ОБЩО ТРУД</div>
+            <div style={{fontSize:16,fontWeight:900,color:'#fff',textAlign:'right'}}>{grandTotalMin} мин</div>
+            <div style={{fontSize:20,fontWeight:900,color:'#fff',textAlign:'right'}}>€{grandTotalCost.toFixed(2)}</div>
+          </div>
+          <div style={{fontSize:11,color:'rgba(255,255,255,0.8)',marginTop:4}}>
+            {Math.floor(grandTotalMin/60)}ч {grandTotalMin%60}мин общо
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   const PAGES = {
     1: Tab1(),
     2: Tab2(),
     3: Tab3(),
     4: Tab4(),
+    5: Tab5(),
   }
 
   return (
