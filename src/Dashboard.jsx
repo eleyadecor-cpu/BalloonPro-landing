@@ -9,6 +9,7 @@ import ThemesPage from './ThemesPage.jsx';
 import OfferPage from './OfferPage.jsx';
 import CalculatorPage from './CalculatorPage.jsx';
 import { supabase } from './supabaseClient';
+import SettingsPage from './SettingsPage.jsx'
 
 const DAYS = ['П','В','С','Ч','П','С','Н'];
 const MONTHS = ['Януари','Февруари','Март','Април','Май','Юни','Юли','Август','Септември','Октомври','Ноември','Декември'];
@@ -52,6 +53,7 @@ const Dashboard = () => {
   const firstDay = new Date(year, month, 1).getDay()
   const offset = firstDay === 0 ? 6 : firstDay - 1
   const daysInMonth = new Date(year, month + 1, 0).getDate()
+  const [showSettings, setShowSettings] = useState(false)
 
   useEffect(() => {
     fetch('https://api.open-meteo.com/v1/forecast?latitude=42.62&longitude=25.4&current=temperature_2m,weathercode,windspeed_10m&daily=weathercode,temperature_2m_max,temperature_2m_min&timezone=Europe%2FSofia&forecast_days=7')
@@ -97,6 +99,7 @@ const Dashboard = () => {
 
   // Навигация
   if (showClients) return <ClientsPage onBack={() => setShowClients(false)} />
+  if (showSettings) return <SettingsPage onBack={() => setShowSettings(false)} />
   if (showInventory) return <InventoryPage onBack={() => setShowInventory(false)} />
   if (showThemes) return <ThemesPage onBack={() => setShowThemes(false)} />
   if (showOffers) return <OfferPage onBack={() => { setShowOffers(false); setOpenNewOffer(false); setCalcOfferData(null) }} prefillInquiry={calcOfferData} openNew={openNewOffer || !!calcOfferData} />
@@ -179,7 +182,7 @@ const Dashboard = () => {
         </div>
         <div style={{ display:'flex', gap:8 }}>
           <button style={{ width:36, height:36, background:'rgba(255,255,255,0.8)', border:'1px solid #FFD3DD', borderRadius:'50%', cursor:'pointer', fontSize:16 }}>🔔</button>
-          <button style={{ width:36, height:36, background:'rgba(255,255,255,0.8)', border:'1px solid #FFD3DD', borderRadius:'50%', cursor:'pointer', fontSize:16 }}>⚙️</button>
+          <button onClick={() => setShowSettings(true)} style={{ width:36, height:36, background:'rgba(255,255,255,0.8)', border:'1px solid #FFD3DD', borderRadius:'50%', cursor:'pointer', fontSize:16 }}>⚙️</button>
         </div>
       </div>
 
