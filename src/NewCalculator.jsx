@@ -254,6 +254,7 @@ export default function NewCalculator({ onBack, inquiry, onCreateOffer }) {
           large_per_cluster: firstTemplate?.large_per_cluster || 1,
           stuffing_percent: firstTemplate?.stuffing_percent || 0,
           cluster_count: 0,
+          inflate_location: 'home',
         }]
       }))
     }
@@ -420,6 +421,17 @@ export default function NewCalculator({ onBack, inquiry, onCreateOffer }) {
                         </div>
                       </div>
                     </Row>
+
+                     {/* НАДУВАНЕ */}
+                    <div style={{display:'flex',gap:8,alignItems:'center',marginBottom:10}}>
+                      <div style={{fontSize:11,fontWeight:700,color:'#81BFB7',textTransform:'uppercase',letterSpacing:1,marginRight:4}}>💨 Надуване:</div>
+                      <button onClick={()=>updateTemplate(g.id,t.id,'inflate_location','home')} style={{padding:'6px 14px',borderRadius:8,border:'none',cursor:'pointer',fontWeight:700,fontSize:12,background:(t.inflate_location||'home')==='home'?'#F3A2BE':'#f0f0f0',color:(t.inflate_location||'home')==='home'?'#fff':'#81BFB7'}}>
+                        🏠 Предварително
+                      </button>
+                      <button onClick={()=>updateTemplate(g.id,t.id,'inflate_location','site')} style={{padding:'6px 14px',borderRadius:8,border:'none',cursor:'pointer',fontWeight:700,fontSize:12,background:t.inflate_location==='site'?'#81BFB7':'#f0f0f0',color:t.inflate_location==='site'?'#fff':'#81BFB7'}}>
+                        📍 На локация
+                      </button>
+                    </div> 
 
                     {/* Автоматично резюме на шаблона */}
                     <div style={{background:'#FFD3DD',borderRadius:8,padding:'8px 12px',fontSize:12,color:'#3a2a35'}}>
