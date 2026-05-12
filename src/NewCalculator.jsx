@@ -601,9 +601,9 @@ export default function NewCalculator({ onBack, inquiry, onCreateOffer }) {
   }, [state, settings, balloonPrices])
  
   const PAGES = {
-    1: <Tab1 />,
-    2: <Tab2 />,
-    3: step === 3 ? <Tab3 /> : null,
+    1: Tab1(),
+    2: Tab2(),
+    3: Tab3(),
   }
 
   return (
