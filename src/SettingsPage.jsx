@@ -126,9 +126,15 @@ export default function SettingsPage({ onBack }) {
     if (data?.[0]) setPrices(p=>[...p,data[0]])
   }
 
+  const SIZE_TO_CM = {5:13, 6:15, 10:26, 11:28, 12:30, 16:41, 18:46, 24:61, 36:91}
+
   const updatePrice = async (id, field, value) => {
-    setPrices(p=>p.map(x=>x.id===id?{...x,[field]:value}:x))
-    await supabase.from('balloon_prices').update({[field]:value}).eq('id', id)
+    let updates = {[field]: value}
+    if (field === 'size_inch' && SIZE_TO_CM[value]) {
+      updates.size_cm = SIZE_TO_CM[value]
+    }
+    setPrices(p => p.map(x => x.id===id ? {...x, ...updates} : x))
+    await supabase.from('balloon_prices').update(updates).eq('id', id)
   }
 
   const deletePrice = async (id) => {
