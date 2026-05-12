@@ -1028,7 +1028,8 @@ export default function NewCalculator({ onBack, inquiry, onCreateOffer }) {
 
     const INFLATE_SEC = { 5:8, 10:22, 11:24, 12:26, 16:35, 18:40, 24:55, 36:80 }
     let totalClusters = 0
-    let totalInflateMin = 0
+    let totalInflateHomeMin = 0
+    let totalInflateSiteMin = 0
     let totalStuffingMin = 0
     let totalClusterAssemblyMin = 0
 
@@ -1039,13 +1040,19 @@ export default function NewCalculator({ onBack, inquiry, onCreateOffer }) {
         const mainCount = clusters * t2.main_per_cluster
         const smallCount = t2.has_small ? clusters * t2.small_per_cluster : 0
         const largeCount = t2.has_large ? clusters * t2.large_per_cluster : 0
-        totalInflateMin += Math.ceil((mainCount * (INFLATE_SEC[t2.main_size_inch]||22) + smallCount * 8 + largeCount * 40) / 60)
+        const inflMin = Math.ceil((mainCount * (INFLATE_SEC[t2.main_size_inch]||22) + smallCount * 8 + largeCount * 40) / 60)
+        if (t2.inflate_location === 'site') {
+          totalInflateSiteMin += inflMin
+        } else {
+          totalInflateHomeMin += inflMin
+        }
         if (t2.stuffing_percent > 0) {
           totalStuffingMin += Math.ceil((mainCount + smallCount) * t2.stuffing_percent / 100 * (t.stuffing_sec_per_balloon||20) / 60)
         }
         totalClusterAssemblyMin += Math.ceil(clusters * (t.cluster_assembly_sec||45) / 60)
       })
     })
+    const totalInflateMin = totalInflateHomeMin + totalInflateSiteMin
 
     const extrasHomeMin = (state.extras||[]).reduce((s,e) => s + (e.prep_at_home ? (+e.prep_home_min||0) : 0), 0)
     const extrasLocationMin = (state.extras||[]).reduce((s,e) => {
@@ -1072,7 +1079,8 @@ export default function NewCalculator({ onBack, inquiry, onCreateOffer }) {
       steps.push({ label:'🏗️ Сглобяване арка', mins: t.arch_assembly_min||15, note:`${t.arch_assembly_min||15} мин` })
       steps.push({ label:'📦 Разопаковане', mins: (t.unpacking_min||15) + (t.space_prep_min||10), note:`${(t.unpacking_min||15)+(t.space_prep_min||10)} мин` })
       if (state.travel_min > 0) steps.push({ label:'🚗 Пристигане', mins: +state.travel_min, note:`${state.travel_km||0} км · ${state.travel_min} мин` })
-      if (totalInflateMin > 0) steps.push({ label:'🎈 Надуване', mins: totalInflateMin + totalStuffingMin + totalClusterAssemblyMin, note:`надуване ${totalInflateMin} мин · сглобяване ${totalClusterAssemblyMin} мин` })
+      if (totalInflateSiteMin > 0) steps.push({ label:'🎈 Надуване на локация', mins: totalInflateSiteMin, note:`${totalInflateSiteMin} мин` })
+      if (totalInflateHomeMin > 0) steps.push({ label:'🎈 Надуване (предварително)', mins: totalInflateHomeMin + totalStuffingMin + totalClusterAssemblyMin, note:`надуване ${totalInflateHomeMin} мин · сглобяване ${totalClusterAssemblyMin} мин` })
       if (extrasHomeMin > 0) steps.push({ label:'✍️ Изработка вкъщи', mins: extrasHomeMin, note:`${extrasHomeMin} мин` })
       if (state.travel_min > 0 || bufferBefore > 0) steps.push({ label:'🚗 Тръгни', mins: (+state.travel_min||0) + bufferBefore, note:`пътуване + ${bufferBefore} мин резерв` })
 
