@@ -938,12 +938,157 @@ export default function NewCalculator({ onBack, inquiry, onCreateOffer }) {
     )
   }
 
+  const Tab6 = () => {
+    const t = settings.times || {}
+
+    const calcClusters = (lengthCm, sizeInch, perCluster) => {
+      const price = balloonPrices.find(p => p.size_inch === sizeInch)
+      const diamCm = price?.size_cm || (sizeInch * 2.54)
+      const factor = perCluster <= 4 ? 4.8 : 6.3
+      return Math.ceil((lengthCm / diamCm) * factor / perCluster)
+    }
+
+    const subMins = (time, m) => {
+      if (!time) return ''
+      const [h, min] = time.split(':').map(Number)
+      let total = h * 60 + min - m
+      total = ((total % 1440) + 1440) % 1440
+      return `${String(Math.floor(total/60)).padStart(2,'0')}:${String(total%60).padStart(2,'0')}`
+    }
+
+    const INFLATE_SEC = { 5:8, 10:22, 11:24, 12:26, 16:35, 18:40, 24:55, 36:80 }
+    let totalClusters = 0
+    let totalInflateMin = 0
+    let totalStuffingMin = 0
+    let totalClusterAssemblyMin = 0
+
+    state.garlands.forEach(g => {
+      g.templates.forEach(t2 => {
+        const clusters = t2.cluster_count || calcClusters(g.length_cm, t2.main_size_inch, t2.main_per_cluster)
+        totalClusters += clusters
+        const mainCount = clusters * t2.main_per_cluster
+        const smallCount = t2.has_small ? clusters * t2.small_per_cluster : 0
+        const largeCount = t2.has_large ? clusters * t2.large_per_cluster : 0
+        totalInflateMin += Math.ceil((mainCount * (INFLATE_SEC[t2.main_size_inch]||22) + smallCount * 8 + largeCount * 40) / 60)
+        if (t2.stuffing_percent > 0) {
+          totalStuffingMin += Math.ceil((mainCount + smallCount) * t2.stuffing_percent / 100 * (t.stuffing_sec_per_balloon||20) / 60)
+        }
+        totalClusterAssemblyMin += Math.ceil(clusters * (t.cluster_assembly_sec||45) / 60)
+      })
+    })
+
+    const extrasHomeMin = (state.extras||[]).reduce((s,e) => s + (e.prep_at_home ? (+e.prep_home_min||0) : 0), 0)
+    const extrasLocationMin = (state.extras||[]).reduce((s,e) => {
+      let total = 0
+      if (e.prep_at_location) total += (+e.prep_location_min||0)
+      total += (+e.placement_min||0)
+      return s + total
+    }, 0)
+    const clusterAttachMin = Math.ceil(totalClusters * (t.cluster_attachment_sec||45) / 60)
+    const locationTotalMin = (t.unpacking_min||15) + (t.space_prep_min||10) + (t.arch_assembly_min||15) + (t.cover_placement_min||5) + clusterAttachMin + extrasLocationMin + (t.final_corrections_min||10) + (t.photo_time_min||10)
+    const dismantleMin = Math.ceil(locationTotalMin * ((t.dismantling_percent||50) / 100))
+    const bufferFinish = t.buffer_finish_min || 10
+    const bufferBefore = t.buffer_before_min || 15
+
+    const buildSetupTL = () => {
+      if (!state.event_start) return []
+      const eventTime = state.event_start.slice(0,5)
+      const readyTime = subMins(eventTime, bufferFinish)
+      const steps = []
+      if (t.photo_time_min > 0) steps.push({ label:'📸 Снимки', mins: t.photo_time_min||10, note:`${t.photo_time_min||10} мин` })
+      if (extrasLocationMin > 0) steps.push({ label:'✨ Допълнения', mins: extrasLocationMin, note:`${extrasLocationMin} мин` })
+      steps.push({ label:'🔧 Финални корекции', mins: t.final_corrections_min||10, note:`${t.final_corrections_min||10} мин` })
+      steps.push({ label:'📍 Закачане кластри', mins: clusterAttachMin, note:`${totalClusters} кластра · ${clusterAttachMin} мин` })
+      steps.push({ label:'🏗️ Сглобяване арка', mins: t.arch_assembly_min||15, note:`${t.arch_assembly_min||15} мин` })
+      steps.push({ label:'📦 Разопаковане', mins: (t.unpacking_min||15) + (t.space_prep_min||10), note:`${(t.unpacking_min||15)+(t.space_prep_min||10)} мин` })
+      if (state.travel_min > 0) steps.push({ label:'🚗 Пристигане', mins: +state.travel_min, note:`${state.travel_km||0} км · ${state.travel_min} мин` })
+      if (totalInflateMin > 0) steps.push({ label:'🎈 Надуване', mins: totalInflateMin + totalStuffingMin + totalClusterAssemblyMin, note:`надуване ${totalInflateMin} мин · сглобяване ${totalClusterAssemblyMin} мин` })
+      if (extrasHomeMin > 0) steps.push({ label:'✍️ Изработка вкъщи', mins: extrasHomeMin, note:`${extrasHomeMin} мин` })
+      if (state.travel_min > 0 || bufferBefore > 0) steps.push({ label:'🚗 Тръгни', mins: (+state.travel_min||0) + bufferBefore, note:`пътуване + ${bufferBefore} мин резерв` })
+
+      const rows = []
+      let cur = readyTime
+      for (let i = steps.length - 1; i >= 0; i--) {
+        if (steps[i].mins > 0) cur = subMins(cur, steps[i].mins)
+        rows.unshift({ time: cur, label: steps[i].label, note: steps[i].note })
+      }
+      if (bufferFinish > 0) rows.push({ time: readyTime, label:`✅ Готово (${bufferFinish} мин резерв)`, note:'' })
+      rows.push({ time: eventTime, label:'🎉 Събитието започва', note:'', isEvent: true })
+      return rows
+    }
+
+    const buildDismTL = () => {
+      if (!state.event_end) return []
+      const endTime = state.event_end.slice(0,5)
+      const steps = []
+      steps.push({ label:'📍 Демонтаж', mins: dismantleMin, note:`${t.dismantling_percent||50}% от монтажа · ${dismantleMin} мин` })
+      if (state.travel_min > 0) steps.push({ label:'🚗 Пристигане', mins: +state.travel_min, note:`${state.travel_km||0} км` })
+      if (state.travel_min > 0 || bufferBefore > 0) steps.push({ label:'🚗 Тръгни', mins: (+state.travel_min||0) + bufferBefore, note:`+ ${bufferBefore} мин резерв` })
+
+      const rows = []
+      let cur = endTime
+      for (let i = steps.length - 1; i >= 0; i--) {
+        if (steps[i].mins > 0) cur = subMins(cur, steps[i].mins)
+        rows.unshift({ time: cur, label: steps[i].label, note: steps[i].note })
+      }
+      rows.push({ time: endTime, label:'✅ Демонтаж завършен', note:'', isEvent: true })
+      return rows
+    }
+
+    const setupTL = buildSetupTL()
+    const dismTL = buildDismTL()
+
+    const TLRow = ({row}) => (
+      <div style={{display:'flex',gap:12,alignItems:'flex-start',paddingBottom:10,marginBottom:10,borderBottom:`1px solid ${row.isEvent?'transparent':'#F0F9F8'}`}}>
+        <div style={{minWidth:58,padding:'5px 8px',background:row.isEvent?'#F3A2BE':'#fff',color:row.isEvent?'#fff':'#81BFB7',border:`1.5px solid ${row.isEvent?'#F3A2BE':'#C6E6E3'}`,fontSize:13,fontWeight:700,textAlign:'center',borderRadius:8,flexShrink:0}}>
+          {row.time}
+        </div>
+        <div>
+          <div style={{fontWeight:700,color:row.isEvent?'#F3A2BE':'#3a2a35',fontSize:13}}>{row.label}</div>
+          {row.note && <div style={{fontSize:11,color:'#81BFB7',marginTop:2}}>{row.note}</div>}
+        </div>
+      </div>
+    )
+
+    return (
+      <div>
+        {!state.event_start && (
+          <div style={{textAlign:'center',padding:40,color:'#81BFB7',background:'rgba(255,255,255,0.7)',borderRadius:20,marginBottom:16}}>
+            ⚠️ Въведи начален час в Таб 1 за да видиш Timeline
+          </div>
+        )}
+        {setupTL.length > 0 && (
+          <div style={{background:'#fff',border:'2px solid #FFD3DD',borderRadius:16,padding:20,marginBottom:16}}>
+            <div style={{fontSize:12,fontWeight:900,color:'#F3A2BE',textTransform:'uppercase',letterSpacing:1.5,marginBottom:16,paddingBottom:8,borderBottom:'2px solid #FFD3DD'}}>
+              📅 Timeline — Монтаж {state.location ? `· ${state.location}` : ''}
+            </div>
+            {setupTL.map((row,i) => <TLRow key={i} row={row} />)}
+          </div>
+        )}
+        {dismTL.length > 0 && (
+          <div style={{background:'#fff',border:'2px solid #C6E6E3',borderRadius:16,padding:20}}>
+            <div style={{fontSize:12,fontWeight:900,color:'#81BFB7',textTransform:'uppercase',letterSpacing:1.5,marginBottom:16,paddingBottom:8,borderBottom:'2px solid #C6E6E3'}}>
+              📦 Timeline — Демонтаж
+            </div>
+            {dismTL.map((row,i) => <TLRow key={i} row={row} />)}
+          </div>
+        )}
+        {!state.event_end && state.event_start && (
+          <div style={{textAlign:'center',padding:20,color:'#81BFB7',background:'rgba(255,255,255,0.7)',borderRadius:12,marginTop:16,fontSize:13}}>
+            💡 Въведи краен час в Таб 1 за да видиш Timeline за демонтаж
+          </div>
+        )}
+      </div>
+    )
+  }
+
   const renderTab = () => {
     if (step === 1) return Tab1()
     if (step === 2) return Tab2()
     if (step === 3) return Tab3()
     if (step === 4) return Tab4()
     if (step === 5) return Tab5()
+    if (step === 6) return Tab6()
     return <div style={{textAlign:'center',padding:60,color:'#81BFB7'}}>🚧 Скоро...</div>
   }
 
