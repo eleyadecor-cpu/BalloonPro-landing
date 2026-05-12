@@ -299,6 +299,13 @@ export default function NewCalculator({ onBack, inquiry, onCreateOffer }) {
       return Math.ceil((lengthCm / diamCm) * factor / perCluster)
     }
 
+    // Общо кластри за целия гирлянд
+    const totalGarlandClusters = (g) => {
+      if (g.templates.length === 0) return 0
+      const firstTemplate = g.templates[0]
+      return firstTemplate.cluster_count || calcClusters(g.length_cm, firstTemplate.main_size_inch, firstTemplate.main_per_cluster)
+    }
+    
     return (
       <div>
         {state.garlands.length === 0 && (
@@ -329,7 +336,12 @@ export default function NewCalculator({ onBack, inquiry, onCreateOffer }) {
 
               {/* ШАБЛОНИ */}
               {g.templates.map((t, ti) => {
-                const auto = calcClusters(g.length_cm, t.main_size_inch, t.main_per_cluster)
+                const totalClusters = totalGarlandClusters(g)
+                const usedByPrev = g.templates.slice(0, ti).reduce((s, prev) => {
+                  return s + (prev.cluster_count || calcClusters(g.length_cm, prev.main_size_inch, prev.main_per_cluster))
+                }, 0)
+                const autoRemaining = Math.max(0, totalClusters - usedByPrev)
+                const auto = ti === 0 ? totalClusters : autoRemaining
                 const clusters = t.cluster_count || auto
 
                 return (
@@ -364,9 +376,17 @@ export default function NewCalculator({ onBack, inquiry, onCreateOffer }) {
                       </div>
                       <div>
                         <Lbl>Брой кластри</Lbl>
-                        <div style={{display:'flex',gap:6,alignItems:'center'}}>
-                          <input style={inp} type="number" min={0} value={t.cluster_count||''} placeholder={`авт. ${auto}`} onChange={e=>updateTemplate(g.id,t.id,'cluster_count',+e.target.value)} />
-                          {t.cluster_count===0 && <span style={{fontSize:10,color:'#F3A2BE',whiteSpace:'nowrap'}}>← авт.</span>}
+                        <div style={{display:'flex',gap:6,alignItems:'center',flexDirection:'column'}}>
+                          <div style={{display:'flex',gap:6,alignItems:'center',width:'100%'}}>
+                            <input style={inp} type="number" min={0} value={t.cluster_count||''} placeholder={`авт. ${auto}`} onChange={e=>updateTemplate(g.id,t.id,'cluster_count',+e.target.value)} />
+                            {!t.cluster_count && <span style={{fontSize:10,color:'#F3A2BE',whiteSpace:'nowrap'}}>← авт.</span>}
+                          </div>
+                          {g.templates.length > 1 && (
+                            <div style={{fontSize:10,color:'#81BFB7',width:'100%'}}>
+                              Общо гирлянд: {totalClusters} кластра
+                              {ti > 0 && ` · Използвани: ${usedByPrev}`}
+                            </div>
+                          )}
                         </div>
                       </div>
                     </Row>
