@@ -32,6 +32,10 @@ const INIT = {
   garlands: [],
   // Таб 4 — Допълнения
   extras: [],
+  // Таб 6
+  dismantle_same_day: true,
+  dismantle_date: '',
+  dismantle_time: '',
   // Таб 9 — Ценообразуване
   margin: 30,
   margin_type: 'percent',
@@ -162,6 +166,40 @@ export default function NewCalculator({ onBack, inquiry, onCreateOffer }) {
         </Row>
         <div style={{marginBottom:12}}><Lbl>Локация</Lbl><input style={inp} placeholder="Зала, адрес, град..." value={state.location} onChange={e=>set('location',e.target.value)} /></div>
         <div><Lbl>Бюджет на клиента (€)</Lbl><input style={inp} type="number" value={state.budget} onChange={e=>set('budget',e.target.value)} /></div>
+        
+        {/* ДЕМОНТАЖ */}
+        <div style={{marginTop:12,padding:12,background:'#F0F9F8',borderRadius:10,border:'1px solid #C6E6E3'}}>
+          <div style={{fontSize:11,fontWeight:700,color:'#81BFB7',textTransform:'uppercase',letterSpacing:1,marginBottom:10}}>📦 Демонтаж</div>
+          <div style={{display:'flex',gap:8,marginBottom:10}}>
+            <button onClick={()=>set('dismantle_same_day',true)} style={{flex:1,padding:'8px',borderRadius:8,border:'none',cursor:'pointer',fontWeight:700,fontSize:12,background:state.dismantle_same_day?'#F3A2BE':'#fff',color:state.dismantle_same_day?'#fff':'#81BFB7'}}>
+              Същия ден (след крайния час)
+            </button>
+            <button onClick={()=>set('dismantle_same_day',false)} style={{flex:1,padding:'8px',borderRadius:8,border:'none',cursor:'pointer',fontWeight:700,fontSize:12,background:!state.dismantle_same_day?'#F3A2BE':'#fff',color:!state.dismantle_same_day?'#fff':'#81BFB7'}}>
+              Друг ден / час
+            </button>
+          </div>
+          {!state.dismantle_same_day && (
+            <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12}}>
+              <div>
+                <Lbl>Дата демонтаж</Lbl>
+                <input style={inp} placeholder="дд.мм.гггг" maxLength={10} value={state.dismantle_date||''} onChange={e=>{
+                  let v = e.target.value.replace(/[^0-9.]/g,'')
+                  if (v.length===2 && !v.includes('.')) v+='.'
+                  if (v.length===5 && v.split('.').length===2) v+='.'
+                  set('dismantle_date',v)
+                }} />
+              </div>
+              <div>
+                <Lbl>Час демонтаж</Lbl>
+                <input style={inp} placeholder="чч:мм" maxLength={5} value={state.dismantle_time||''} onChange={e=>{
+                  let v = e.target.value.replace(/[^0-9:]/g,'')
+                  if (v.length===2 && !v.includes(':')) v+=':'
+                  set('dismantle_time',v)
+                }} />
+              </div>
+            </div>
+          )}
+        </div>
       </Sec>
 
       <Sec title="📝 Бележки и вдъхновение">
@@ -1008,29 +1046,29 @@ export default function NewCalculator({ onBack, inquiry, onCreateOffer }) {
 
       const rows = []
       let cur = readyTime
-      for (let i = steps.length - 1; i >= 0; i--) {
+      for (let i = 0; i < steps.length; i++) {
         if (steps[i].mins > 0) cur = subMins(cur, steps[i].mins)
-        rows.unshift({ time: cur, label: steps[i].label, note: steps[i].note })
+        rows.push({ time: cur, label: steps[i].label, note: steps[i].note })
       }
+      rows.reverse()
       if (bufferFinish > 0) rows.push({ time: readyTime, label:`✅ Готово (${bufferFinish} мин резерв)`, note:'' })
       rows.push({ time: eventTime, label:'🎉 Събитието започва', note:'', isEvent: true })
       return rows
     }
 
     const buildDismTL = () => {
-      if (!state.event_end) return []
-      const endTime = state.event_end.slice(0,5)
-      const steps = []
-      steps.push({ label:'📍 Демонтаж', mins: dismantleMin, note:`${t.dismantling_percent||50}% от монтажа · ${dismantleMin} мин` })
-      if (state.travel_min > 0) steps.push({ label:'🚗 Пристигане', mins: +state.travel_min, note:`${state.travel_km||0} км` })
-      if (state.travel_min > 0 || bufferBefore > 0) steps.push({ label:'🚗 Тръгни', mins: (+state.travel_min||0) + bufferBefore, note:`+ ${bufferBefore} мин резерв` })
+      const dismTime = state.dismantle_same_day 
+        ? state.event_end?.slice(0,5)
+        : state.dismantle_time?.slice(0,5)
+      if (!dismTime) return []
 
       const rows = []
       let cur = endTime
-      for (let i = steps.length - 1; i >= 0; i--) {
+      for (let i = 0; i < steps.length; i++) {
         if (steps[i].mins > 0) cur = subMins(cur, steps[i].mins)
-        rows.unshift({ time: cur, label: steps[i].label, note: steps[i].note })
+        rows.push({ time: cur, label: steps[i].label, note: steps[i].note })
       }
+      rows.reverse()
       rows.push({ time: endTime, label:'✅ Демонтаж завършен', note:'', isEvent: true })
       return rows
     }
