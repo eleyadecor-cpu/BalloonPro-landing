@@ -939,12 +939,13 @@ export default function NewCalculator({ onBack, inquiry, onCreateOffer }) {
     )
   }
 
-  const PAGES = {
-    1: Tab1(),
-    2: Tab2(),
-    3: Tab3(),
-    4: Tab4(),
-    5: Tab5(),
+  const renderTab = () => {
+    if (step === 1) return Tab1()
+    if (step === 2) return Tab2()
+    if (step === 3) return Tab3()
+    if (step === 4) return Tab4()
+    if (step === 5) return Tab5()
+    return <div style={{textAlign:'center',padding:60,color:'#81BFB7'}}>🚧 Скоро...</div>
   }
 
   return (
@@ -974,11 +975,7 @@ export default function NewCalculator({ onBack, inquiry, onCreateOffer }) {
 
       {/* СЪДЪРЖАНИЕ */}
       <div style={{background:'rgba(255,255,255,0.6)',borderRadius:20,padding:24,border:'1px solid rgba(243,162,190,0.2)'}}>
-        {PAGES[step] || (
-          <div style={{textAlign:'center',padding:60,color:'#81BFB7'}}>
-            🚧 Таб {step} — скоро...
-          </div>
-        )}
+        {renderTab()}
       </div>
 
       {/* НАВИГАЦИЯ */}
