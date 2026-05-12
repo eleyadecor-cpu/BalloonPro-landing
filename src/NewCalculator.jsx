@@ -393,7 +393,7 @@ export default function NewCalculator({ onBack, inquiry, onCreateOffer }) {
     )
   }
 
-  const Tab3 = React.useCallback(() => {
+  const Tab3 = () => {
     const allSizes = [...new Set(balloonPrices.map(p => p.size_inch))].sort((a,b) => a-b)
 
     const setColor = (gId, tId, cIdx, field, value) => {
@@ -632,7 +632,7 @@ export default function NewCalculator({ onBack, inquiry, onCreateOffer }) {
         )}
       </div>
     )
-  }, [state, settings, balloonPrices])
+  }
  
   const Tab4 = () => {
     const TYPES = [
