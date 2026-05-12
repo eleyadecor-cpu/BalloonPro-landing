@@ -599,9 +599,7 @@ export default function NewCalculator({ onBack, inquiry, onCreateOffer }) {
       </div>
     )
   }, [state, settings, balloonPrices])
-
-  const PAGES = {
-
+ 
   const PAGES = {
     1: <Tab1 />,
     2: <Tab2 />,
