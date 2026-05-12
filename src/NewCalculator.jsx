@@ -31,6 +31,8 @@ const INIT = {
   inspiration_urls: [],
   // Таб 2 — Гирлянди
   garlands: [],
+  // Таб 4 — Допълнения
+  extras: [],
   // Таб 9 — Ценообразуване
   margin: 30,
   margin_type: 'percent',
@@ -600,10 +602,149 @@ export default function NewCalculator({ onBack, inquiry, onCreateOffer }) {
     )
   }, [state, settings, balloonPrices])
  
+  const Tab4 = () => {
+    const TYPES = [
+      { id:'sign', label:'🖊️ Надпис' },
+      { id:'flowers', label:'🌸 Цветя' },
+      { id:'toy', label:'🧸 Плюшена играчка' },
+      { id:'figure', label:'🎭 Фигура' },
+      { id:'neon', label:'💡 Неон' },
+      { id:'number', label:'🔢 Цифра' },
+      { id:'cloud', label:'☁️ Облак' },
+      { id:'other', label:'✨ Друго' },
+    ]
+
+    const addExtra = () => {
+      set('extras', [...(state.extras||[]), {
+        id: Date.now(),
+        type: 'sign',
+        description: '',
+        material_cost: 0,
+        rental_cost: 0,
+        prep_at_home: false,
+        prep_home_min: 0,
+        prep_at_location: false,
+        prep_location_min: 0,
+        placement_min: 0,
+      }])
+    }
+
+    const updateExtra = (id, field, value) => {
+      set('extras', (state.extras||[]).map(e => e.id===id ? {...e,[field]:value} : e))
+    }
+
+    const removeExtra = (id) => {
+      set('extras', (state.extras||[]).filter(e => e.id!==id))
+    }
+
+    const totalMaterial = (state.extras||[]).reduce((s,e) => s + (+e.material_cost||0) + (+e.rental_cost||0), 0)
+    const totalTime = (state.extras||[]).reduce((s,e) => s + (+e.prep_home_min||0) + (+e.prep_location_min||0) + (+e.placement_min||0), 0)
+
+    return (
+      <div>
+        {(state.extras||[]).length === 0 && (
+          <div style={{textAlign:'center',padding:40,color:'#81BFB7',background:'rgba(255,255,255,0.7)',borderRadius:20,marginBottom:16}}>
+            Няма допълнения — добави!
+          </div>
+        )}
+
+        {(state.extras||[]).map((e, ei) => (
+          <div key={e.id} style={{background:'#fff',border:'2px solid #FFD3DD',borderRadius:16,padding:20,marginBottom:12}}>
+            <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:16}}>
+              <div style={{display:'flex',gap:10,alignItems:'center',flex:1,flexWrap:'wrap'}}>
+                <select style={{...inp,maxWidth:180,fontWeight:700}} value={e.type} onChange={ev=>updateExtra(e.id,'type',ev.target.value)}>
+                  {TYPES.map(t=><option key={t.id} value={t.id}>{t.label}</option>)}
+                </select>
+                <input style={{...inp,flex:1,minWidth:200}} placeholder="Описание (напр. Еднорог голям, Надпис с ime...)" value={e.description} onChange={ev=>updateExtra(e.id,'description',ev.target.value)} />
+              </div>
+              <button onClick={()=>removeExtra(e.id)} style={{background:'#FFD3DD',border:'none',borderRadius:8,color:'#c0392b',cursor:'pointer',fontWeight:700,padding:'6px 12px',marginLeft:8}}>🗑️</button>
+            </div>
+
+            {/* РАЗХОДИ */}
+            <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12,marginBottom:16}}>
+              <div>
+                <div style={{fontSize:10,fontWeight:700,color:'#81BFB7',textTransform:'uppercase',letterSpacing:1,marginBottom:6}}>💰 Материал (€)</div>
+                <input style={inp} type="number" min={0} step={0.5} value={e.material_cost||0} onChange={ev=>updateExtra(e.id,'material_cost',+ev.target.value)} />
+              </div>
+              <div>
+                <div style={{fontSize:10,fontWeight:700,color:'#81BFB7',textTransform:'uppercase',letterSpacing:1,marginBottom:6}}>🔑 Наем (€)</div>
+                <input style={inp} type="number" min={0} step={0.5} value={e.rental_cost||0} onChange={ev=>updateExtra(e.id,'rental_cost',+ev.target.value)} />
+              </div>
+            </div>
+
+            {/* ИЗРАБОТКА */}
+            <div style={{background:'#F0F9F8',borderRadius:10,padding:12,marginBottom:12}}>
+              <div style={{fontSize:10,fontWeight:700,color:'#81BFB7',textTransform:'uppercase',letterSpacing:1,marginBottom:10}}>⏱️ Изработка</div>
+              <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12}}>
+                <div style={{background:'#fff',borderRadius:8,padding:10,border:`1px solid ${e.prep_at_home?'#F3A2BE':'#C6E6E3'}`}}>
+                  <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:8}}>
+                    <input type="checkbox" checked={e.prep_at_home} onChange={ev=>updateExtra(e.id,'prep_at_home',ev.target.checked)} style={{width:16,height:16,accentColor:'#F3A2BE',cursor:'pointer'}} />
+                    <span style={{fontSize:12,fontWeight:700,color:e.prep_at_home?'#F3A2BE':'#81BFB7'}}>🏠 Вкъщи</span>
+                  </div>
+                  {e.prep_at_home && (
+                    <div style={{display:'flex',gap:6,alignItems:'center'}}>
+                      <input style={{...inp,flex:1}} type="number" min={0} value={e.prep_home_min||0} onChange={ev=>updateExtra(e.id,'prep_home_min',+ev.target.value)} />
+                      <span style={{fontSize:12,color:'#81BFB7'}}>мин</span>
+                    </div>
+                  )}
+                </div>
+                <div style={{background:'#fff',borderRadius:8,padding:10,border:`1px solid ${e.prep_at_location?'#F3A2BE':'#C6E6E3'}`}}>
+                  <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:8}}>
+                    <input type="checkbox" checked={e.prep_at_location} onChange={ev=>updateExtra(e.id,'prep_at_location',ev.target.checked)} style={{width:16,height:16,accentColor:'#F3A2BE',cursor:'pointer'}} />
+                    <span style={{fontSize:12,fontWeight:700,color:e.prep_at_location?'#F3A2BE':'#81BFB7'}}>📍 На локация</span>
+                  </div>
+                  {e.prep_at_location && (
+                    <div style={{display:'flex',gap:6,alignItems:'center'}}>
+                      <input style={{...inp,flex:1}} type="number" min={0} value={e.prep_location_min||0} onChange={ev=>updateExtra(e.id,'prep_location_min',+ev.target.value)} />
+                      <span style={{fontSize:12,color:'#81BFB7'}}>мин</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* ПОСТАВЯНЕ */}
+            <div style={{display:'flex',gap:10,alignItems:'center'}}>
+              <div style={{fontSize:10,fontWeight:700,color:'#81BFB7',textTransform:'uppercase',letterSpacing:1}}>📍 Поставяне на локация</div>
+              <input style={{...inp,maxWidth:80}} type="number" min={0} value={e.placement_min||0} onChange={ev=>updateExtra(e.id,'placement_min',+ev.target.value)} />
+              <span style={{fontSize:12,color:'#81BFB7'}}>мин</span>
+            </div>
+          </div>
+        ))}
+
+        <button onClick={addExtra} style={{width:'100%',padding:'14px',background:'linear-gradient(135deg,#FFD3DD,#F3A2BE)',border:'none',borderRadius:12,color:'#fff',fontWeight:800,cursor:'pointer',fontSize:14,marginBottom:16}}>
+          + Добави допълнение
+        </button>
+
+        {/* РЕЗЮМЕ */}
+        {(state.extras||[]).length > 0 && (
+          <div style={{background:'#fff',border:'2px solid #81BFB7',borderRadius:16,padding:20}}>
+            <div style={{fontSize:12,fontWeight:900,color:'#81BFB7',textTransform:'uppercase',letterSpacing:1.5,marginBottom:12}}>📊 Резюме на допълненията</div>
+            <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:12}}>
+              <div style={{textAlign:'center',padding:12,background:'#F0F9F8',borderRadius:10}}>
+                <div style={{fontSize:10,color:'#81BFB7',fontWeight:700,textTransform:'uppercase',marginBottom:4}}>Разходи</div>
+                <div style={{fontSize:20,fontWeight:900,color:'#F3A2BE'}}>€{totalMaterial.toFixed(2)}</div>
+              </div>
+              <div style={{textAlign:'center',padding:12,background:'#F0F9F8',borderRadius:10}}>
+                <div style={{fontSize:10,color:'#81BFB7',fontWeight:700,textTransform:'uppercase',marginBottom:4}}>Общо време</div>
+                <div style={{fontSize:20,fontWeight:900,color:'#81BFB7'}}>{totalTime} мин</div>
+              </div>
+              <div style={{textAlign:'center',padding:12,background:'#F0F9F8',borderRadius:10}}>
+                <div style={{fontSize:10,color:'#81BFB7',fontWeight:700,textTransform:'uppercase',marginBottom:4}}>Брой допълнения</div>
+                <div style={{fontSize:20,fontWeight:900,color:'#3a2a35'}}>{(state.extras||[]).length}</div>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    )
+  }
+
   const PAGES = {
     1: Tab1(),
     2: Tab2(),
     3: Tab3(),
+    4: Tab4(),
   }
 
   return (
