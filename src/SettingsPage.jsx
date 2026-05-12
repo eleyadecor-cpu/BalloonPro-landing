@@ -24,6 +24,7 @@ export default function SettingsPage({ onBack }) {
   const [times, setTimes] = useState({})
   const [finances, setFinances] = useState({})
   const [equipment, setEquipment] = useState([])
+  const [clusterTemplates, setClusterTemplates] = useState([])
   const [manufacturers, setManufacturers] = useState([])
   const [series, setSeries] = useState([])
   const [prices, setPrices] = useState([])
@@ -35,13 +36,16 @@ export default function SettingsPage({ onBack }) {
   useEffect(() => { loadAll() }, [])
 
   const loadAll = async () => {
-    const [s, t, f, eq, mfr] = await Promise.all([
+    const [s, t, f, eq, mfr, ct] = await Promise.all([
       supabase.from('settings').select('*').limit(1).single(),
       supabase.from('time_settings').select('*').limit(1).single(),
       supabase.from('financial_settings').select('*').limit(1).single(),
       supabase.from('equipment').select('*').order('name'),
       supabase.from('manufacturers').select('*').order('name'),
+      supabase.from('cluster_templates').select('*').order('name'),
     ])
+    setClusterTemplates(ct.data || [])
+    
     if (s.data) setCompany(s.data)
     if (t.data) setTimes(t.data)
     if (f.data) setFinances(f.data)
@@ -162,6 +166,7 @@ export default function SettingsPage({ onBack }) {
   const TABS = [
     {id:'company', label:'👤 Фирма'},
     {id:'balloons', label:'🎈 Балони'},
+    {id:'templates', label:'🔗 Шаблони кластри'},
     {id:'times', label:'⏱️ Времена'},
     {id:'finances', label:'💰 Финанси'},
     {id:'equipment', label:'📦 Оборудване'},
@@ -378,7 +383,76 @@ export default function SettingsPage({ onBack }) {
           </button>
         </div>
       )}
-
+      {/* ШАБЛОНИ КЛАСТРИ */}
+      {tab==='templates' && (
+        <div>
+          <Sec title="🔗 Шаблони на кластри">
+            <div style={{display:'grid',gridTemplateColumns:'2fr 1fr 1fr 1fr 1fr 1fr 1fr auto',gap:8,marginBottom:8}}>
+              {['Ime','Размер "','Бр/кластър','5" балони','Бр 5"','18" балон','Stuffing %',''].map(h=>(
+                <div key={h} style={{fontSize:10,fontWeight:700,color:'#81BFB7',textTransform:'uppercase',letterSpacing:1}}>{h}</div>
+              ))}
+            </div>
+            {clusterTemplates.map(ct=>(
+              <div key={ct.id} style={{display:'grid',gridTemplateColumns:'2fr 1fr 1fr 1fr 1fr 1fr 1fr auto',gap:8,marginBottom:8,alignItems:'center',padding:'8px',background:'#F0F9F8',borderRadius:10}}>
+                <input style={inp} type="text" value={ct.name||''} onChange={e=>{
+                  setClusterTemplates(p=>p.map(x=>x.id===ct.id?{...x,name:e.target.value}:x))
+                  supabase.from('cluster_templates').update({name:e.target.value}).eq('id',ct.id)
+                }} />
+                <select style={inp} value={ct.main_size_inch||10} onChange={e=>{
+                  const v = +e.target.value
+                  setClusterTemplates(p=>p.map(x=>x.id===ct.id?{...x,main_size_inch:v}:x))
+                  supabase.from('cluster_templates').update({main_size_inch:v}).eq('id',ct.id)
+                }}>
+                  {[5,10,11,12,16,18,24,36].map(s=><option key={s} value={s}>{s}"</option>)}
+                </select>
+                <select style={inp} value={ct.main_per_cluster||4} onChange={e=>{
+                  const v = +e.target.value
+                  setClusterTemplates(p=>p.map(x=>x.id===ct.id?{...x,main_per_cluster:v}:x))
+                  supabase.from('cluster_templates').update({main_per_cluster:v}).eq('id',ct.id)
+                }}>
+                  {[2,3,4,5,6,7,8].map(n=><option key={n} value={n}>{n}</option>)}
+                </select>
+                <div style={{display:'flex',justifyContent:'center'}}>
+                  <input type="checkbox" checked={ct.has_small||false} onChange={e=>{
+                    const v = e.target.checked
+                    setClusterTemplates(p=>p.map(x=>x.id===ct.id?{...x,has_small:v}:x))
+                    supabase.from('cluster_templates').update({has_small:v}).eq('id',ct.id)
+                  }} style={{width:18,height:18,accentColor:'#F3A2BE',cursor:'pointer'}} />
+                </div>
+                <input style={inp} type="number" min={0} disabled={!ct.has_small} value={ct.small_per_cluster||0} onChange={e=>{
+                  const v = +e.target.value
+                  setClusterTemplates(p=>p.map(x=>x.id===ct.id?{...x,small_per_cluster:v}:x))
+                  supabase.from('cluster_templates').update({small_per_cluster:v}).eq('id',ct.id)
+                }} />
+                <div style={{display:'flex',justifyContent:'center'}}>
+                  <input type="checkbox" checked={ct.has_large||false} onChange={e=>{
+                    const v = e.target.checked
+                    setClusterTemplates(p=>p.map(x=>x.id===ct.id?{...x,has_large:v}:x))
+                    supabase.from('cluster_templates').update({has_large:v}).eq('id',ct.id)
+                  }} style={{width:18,height:18,accentColor:'#F3A2BE',cursor:'pointer'}} />
+                </div>
+                <input style={inp} type="number" min={0} max={100} value={ct.stuffing_percent||0} onChange={e=>{
+                  const v = +e.target.value
+                  setClusterTemplates(p=>p.map(x=>x.id===ct.id?{...x,stuffing_percent:v}:x))
+                  supabase.from('cluster_templates').update({stuffing_percent:v}).eq('id',ct.id)
+                }} />
+                <button onClick={async()=>{
+                  if (!window.confirm('Изтрий шаблона?')) return
+                  await supabase.from('cluster_templates').delete().eq('id',ct.id)
+                  setClusterTemplates(p=>p.filter(x=>x.id!==ct.id))
+                }} style={{background:'none',border:'none',color:'#F3A2BE',cursor:'pointer',fontSize:20}}>×</button>
+              </div>
+            ))}
+            {clusterTemplates.length===0 && <div style={{fontSize:12,color:'#81BFB7',textAlign:'center',padding:24}}>Няма шаблони</div>}
+            <button onClick={async()=>{
+              const {data} = await supabase.from('cluster_templates').insert([{name:'Нов шаблон',main_size_inch:10,main_per_cluster:4,has_small:false,small_per_cluster:2,has_large:false,large_per_cluster:1,stuffing_percent:0}]).select()
+              if (data?.[0]) setClusterTemplates(p=>[...p,data[0]])
+            }} style={{padding:'10px 20px',background:'linear-gradient(135deg,#FFD3DD,#F3A2BE)',border:'none',borderRadius:10,color:'#fff',fontWeight:700,cursor:'pointer',marginTop:8}}>
+              + Добави шаблон
+            </button>
+          </Sec>
+        </div>
+      )}  
       {/* ОБОРУДВАНЕ */}
       {tab==='equipment' && (
         <div>

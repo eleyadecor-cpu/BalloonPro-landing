@@ -12,7 +12,7 @@ const Sec = ({title, children}) => (
 const Row = ({children}) => <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(180px,1fr))',gap:12,marginBottom:12}}>{children}</div>
 
 const EVENT_TYPES = ['Рожден ден','Сватба','Кръщене','Абитуриентски бал','Корпоративно събитие','Детско парти','Годишнина','Годеж','Друго']
-
+const [clusterTemplates, setClusterTemplates] = useState([])
 const INIT = {
   // Таб 1 — Събитие
   inquiry_id: '',
@@ -58,6 +58,7 @@ export default function NewCalculator({ onBack, inquiry, onCreateOffer }) {
   const [state, setState] = useState(INIT)
   const [settings, setSettings] = useState({})
   const [balloonPrices, setBalloonPrices] = useState([])
+  const [clusterTemplates, setClusterTemplates] = useState([])
   const set = (k, v) => setState(p => ({...p, [k]: v}))
 
   useEffect(() => { loadSettings() }, [])
@@ -88,13 +89,15 @@ export default function NewCalculator({ onBack, inquiry, onCreateOffer }) {
   }, [inquiry])
 
   const loadSettings = async () => {
-    const [ts, fs, bp] = await Promise.all([
+    const [ts, fs, bp, ct] = await Promise.all([
       supabase.from('time_settings').select('*').limit(1).single(),
       supabase.from('financial_settings').select('*').limit(1).single(),
       supabase.from('balloon_prices').select('*, balloon_series(name, manufacturer_id, manufacturers(name))').order('size_inch'),
+      supabase.from('cluster_templates').select('*').order('name'),
     ])
     setSettings({ times: ts.data || {}, finances: fs.data || {} })
     setBalloonPrices(bp.data || [])
+    setClusterTemplates(ct.data || [])
   }
 
   const formatDate = (d) => {
@@ -200,19 +203,40 @@ export default function NewCalculator({ onBack, inquiry, onCreateOffer }) {
     }
 
     const addTemplate = (gId) => {
+      const firstTemplate = clusterTemplates[0]
       set('garlands', state.garlands.map(g => g.id!==gId ? g : {
         ...g,
         templates: [...g.templates, {
           id: Date.now(),
-          main_size_inch: 10,
-          main_per_cluster: 4,
-          has_small: false,
-          small_per_cluster: 2,
-          has_large: false,
-          large_per_cluster: 1,
-          stuffing_percent: 0,
+          template_id: firstTemplate?.id || '',
+          main_size_inch: firstTemplate?.main_size_inch || 10,
+          main_per_cluster: firstTemplate?.main_per_cluster || 4,
+          has_small: firstTemplate?.has_small || false,
+          small_per_cluster: firstTemplate?.small_per_cluster || 2,
+          has_large: firstTemplate?.has_large || false,
+          large_per_cluster: firstTemplate?.large_per_cluster || 1,
+          stuffing_percent: firstTemplate?.stuffing_percent || 0,
           cluster_count: 0,
         }]
+      }))
+    }
+
+    const applyTemplate = (gId, tId, templateId) => {
+      const tmpl = clusterTemplates.find(t => t.id === templateId)
+      if (!tmpl) return
+      set('garlands', state.garlands.map(g => g.id!==gId ? g : {
+        ...g,
+        templates: g.templates.map(t => t.id!==tId ? t : {
+          ...t,
+          template_id: templateId,
+          main_size_inch: tmpl.main_size_inch,
+          main_per_cluster: tmpl.main_per_cluster,
+          has_small: tmpl.has_small,
+          small_per_cluster: tmpl.small_per_cluster,
+          has_large: tmpl.has_large,
+          large_per_cluster: tmpl.large_per_cluster,
+          stuffing_percent: tmpl.stuffing_percent,
+        })
       }))
     }
 
@@ -274,7 +298,15 @@ export default function NewCalculator({ onBack, inquiry, onCreateOffer }) {
                 return (
                   <div key={t.id} style={{background:'#F0F9F8',borderRadius:12,padding:14,marginBottom:10,border:'1px solid #C6E6E3'}}>
                     <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:12}}>
-                      <div style={{fontSize:12,fontWeight:700,color:'#81BFB7'}}>Шаблон {ti+1}</div>
+                      <div style={{display:'flex',gap:8,alignItems:'center'}}>
+                        <span style={{fontSize:12,fontWeight:700,color:'#81BFB7'}}>Шаблон {ti+1}</span>
+                        <select style={{...inp,maxWidth:200}} value={t.template_id||''} onChange={e=>applyTemplate(g.id,t.id,e.target.value)}>
+                          <option value="">-- Избери шаблон --</option>
+                          {clusterTemplates.map(ct=>(
+                            <option key={ct.id} value={ct.id}>{ct.name}</option>
+                          ))}
+                        </select>
+                      </div>
                       <button onClick={()=>removeTemplate(g.id,t.id)} style={{background:'none',border:'none',color:'#F3A2BE',cursor:'pointer',fontSize:18}}>×</button>
                     </div>
 
