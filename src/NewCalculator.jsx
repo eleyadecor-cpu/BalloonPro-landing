@@ -12,7 +12,6 @@ const Sec = ({title, children}) => (
 const Row = ({children}) => <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(180px,1fr))',gap:12,marginBottom:12}}>{children}</div>
 
 const EVENT_TYPES = ['Рожден ден','Сватба','Кръщене','Абитуриентски бал','Корпоративно събитие','Детско парти','Годишнина','Годеж','Друго']
-const [clusterTemplates, setClusterTemplates] = useState([])
 const INIT = {
   // Таб 1 — Събитие
   inquiry_id: '',
