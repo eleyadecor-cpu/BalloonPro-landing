@@ -1057,19 +1057,24 @@ export default function NewCalculator({ onBack, inquiry, onCreateOffer }) {
     }
 
     const buildDismTL = () => {
-      const dismTime = state.dismantle_same_day 
+      const dismTime = state.dismantle_same_day
         ? state.event_end?.slice(0,5)
         : state.dismantle_time?.slice(0,5)
       if (!dismTime) return []
 
+      const dismSteps = []
+      dismSteps.push({ label:'📍 Демонтаж', mins: dismantleMin, note:`${t.dismantling_percent||50}% от монтажа · ${dismantleMin} мин` })
+      if (state.travel_min > 0) dismSteps.push({ label:'🚗 Пристигане', mins: +state.travel_min, note:`${state.travel_km||0} км` })
+      if (state.travel_min > 0 || bufferBefore > 0) dismSteps.push({ label:'🚗 Тръгни', mins: (+state.travel_min||0) + bufferBefore, note:`+ ${bufferBefore} мин резерв` })
+
       const rows = []
       let cur = dismTime
-      for (let i = 0; i < steps.length; i++) {
-        if (steps[i].mins > 0) cur = subMins(cur, steps[i].mins)
-        rows.push({ time: cur, label: steps[i].label, note: steps[i].note })
+      for (let i = 0; i < dismSteps.length; i++) {
+        if (dismSteps[i].mins > 0) cur = subMins(cur, dismSteps[i].mins)
+        rows.push({ time: cur, label: dismSteps[i].label, note: dismSteps[i].note })
       }
       rows.reverse()
-      rows.push({ time: endTime, label:'✅ Демонтаж завършен', note:'', isEvent: true })
+      rows.push({ time: dismTime, label:'✅ Демонтаж завършен', note:'', isEvent: true })
       return rows
     }
 
