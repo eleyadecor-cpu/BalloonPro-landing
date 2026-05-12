@@ -359,9 +359,251 @@ export default function NewCalculator({ onBack, inquiry, onCreateOffer }) {
     )
   }
 
+  const Tab3 = () => {
+    const allSizes = [...new Set(balloonPrices.map(p => p.size_inch))].sort((a,b) => a-b)
+
+    const setColor = (gId, tId, cIdx, field, value) => {
+      set('garlands', state.garlands.map(g => g.id!==gId ? g : {
+        ...g,
+        templates: g.templates.map(t => {
+          if (t.id!==tId) return t
+          const colors = [...(t.colors||[])]
+          while (colors.length <= cIdx) colors.push({name:'', size_inch: t.main_size_inch, clusters:0, stuffing_color:'', stuffing_size_inch:5})
+          colors[cIdx] = {...colors[cIdx], [field]: value}
+          return {...t, colors}
+        })
+      }))
+    }
+
+    const calcClusters = (lengthCm, sizeInch, perCluster) => {
+      const price = balloonPrices.find(p => p.size_inch === sizeInch)
+      const diamCm = price?.size_cm || (sizeInch * 2.54)
+      const factor = perCluster <= 4 ? 4.8 : 6.3
+      return Math.ceil((lengthCm / diamCm) * factor / perCluster)
+    }
+
+    // Изчисляваме пълния списък за поръчка
+    const shoppingList = {}
+    const stuffingList = {}
+
+    state.garlands.forEach(g => {
+      g.templates.forEach(t => {
+        const clusters = t.cluster_count || calcClusters(g.length_cm, t.main_size_inch, t.main_per_cluster)
+        const colors = t.colors || []
+        const usedClusters = colors.reduce((s,c) => s + (c.clusters||0), 0)
+        const remaining = Math.max(0, clusters - usedClusters)
+
+        colors.forEach((c, ci) => {
+          const clCount = c.clusters || (ci===colors.length-1 ? remaining : 0)
+          if (!clCount) return
+          const key = `${c.name||'Без цвят'}_${t.main_size_inch}`
+          if (!shoppingList[key]) shoppingList[key] = {name: c.name||'Без цвят', size: t.main_size_inch, count: 0}
+          shoppingList[key].count += clCount * t.main_per_cluster
+
+          // Stuffing
+          if (t.stuffing_percent > 0) {
+            const stuffCount = Math.ceil(clCount * t.main_per_cluster * t.stuffing_percent / 100)
+            const sKey = `${c.stuffing_color||c.name||'Без цвят'}_${t.main_size_inch}_inner`
+            if (!stuffingList[sKey]) stuffingList[sKey] = {name: c.stuffing_color||c.name||'Без цвят', size: t.main_size_inch, count: 0}
+            stuffingList[sKey].count += stuffCount
+          }
+
+          // Малки 5"
+          if (t.has_small) {
+            const sKey5 = `${c.name||'Без цвят'}_5`
+            if (!shoppingList[sKey5]) shoppingList[sKey5] = {name: c.name||'Без цвят', size: 5, count: 0}
+            shoppingList[sKey5].count += clCount * t.small_per_cluster
+            // Stuffing за 5"
+            if (t.stuffing_percent > 0) {
+              const stuff5 = Math.ceil(clCount * t.small_per_cluster * t.stuffing_percent / 100)
+              const sKey5i = `${c.stuffing_color||c.name||'Без цвят'}_5_inner`
+              if (!stuffingList[sKey5i]) stuffingList[sKey5i] = {name: c.stuffing_color||c.name||'Без цвят', size: 5, count: 0}
+              stuffingList[sKey5i].count += stuff5
+            }
+          }
+
+          // Голям 18"
+          if (t.has_large) {
+            const lKey = `${c.name||'Без цвят'}_18`
+            if (!shoppingList[lKey]) shoppingList[lKey] = {name: c.name||'Без цвят', size: 18, count: 0}
+            shoppingList[lKey].count += clCount * t.large_per_cluster
+          }
+        })
+
+        // Ако няма цветове — добавяме без цвят
+        if (colors.length === 0) {
+          const key = `Без цвят_${t.main_size_inch}`
+          if (!shoppingList[key]) shoppingList[key] = {name: 'Без цвят', size: t.main_size_inch, count: 0}
+          shoppingList[key].count += clusters * t.main_per_cluster
+        }
+      })
+    })
+
+    const getBuffer = (size) => {
+      const f = settings.finances || {}
+      if (size <= 6) return (f.defect_buffer_small || 10) / 100
+      if (size <= 14) return (f.defect_buffer_medium || 7) / 100
+      return (f.defect_buffer_large || 5) / 100
+    }
+
+    return (
+      <div>
+        {state.garlands.length === 0 && (
+          <div style={{textAlign:'center',padding:40,color:'#81BFB7',background:'rgba(255,255,255,0.7)',borderRadius:20}}>
+            Първо добави гирлянди в Таб 2
+          </div>
+        )}
+
+        {state.garlands.map(g => (
+          <div key={g.id} style={{background:'#fff',border:'2px solid #FFD3DD',borderRadius:16,padding:20,marginBottom:16}}>
+            <div style={{fontSize:14,fontWeight:900,color:'#F3A2BE',marginBottom:16}}>🎈 {g.name} — {g.length_cm} см</div>
+
+            {g.templates.map((t, ti) => {
+              const clusters = t.cluster_count || calcClusters(g.length_cm, t.main_size_inch, t.main_per_cluster)
+              const colors = t.colors || []
+              const usedClusters = colors.reduce((s,c) => s + (c.clusters||0), 0)
+              const remaining = clusters - usedClusters
+
+              return (
+                <div key={t.id} style={{background:'#F0F9F8',borderRadius:12,padding:14,marginBottom:12,border:'1px solid #C6E6E3'}}>
+                  <div style={{fontSize:12,fontWeight:700,color:'#81BFB7',marginBottom:12}}>
+                    Шаблон {ti+1} — {clusters} кластра × {t.main_per_cluster} бр {t.main_size_inch}"
+                    {t.has_small ? ` + ${t.small_per_cluster} бр 5"` : ''}
+                    {t.has_large ? ` + ${t.large_per_cluster} бр 18"` : ''}
+                  </div>
+
+                  {/* ЦВЕТОВЕ */}
+                  {colors.map((c, ci) => (
+                    <div key={ci} style={{background:'#fff',borderRadius:10,padding:12,marginBottom:8,border:'1px solid #FFD3DD'}}>
+                      <div style={{display:'grid',gridTemplateColumns:'2fr 1fr 1fr auto',gap:8,alignItems:'end',marginBottom: t.stuffing_percent>0?8:0}}>
+                        <div>
+                          {ci===0 && <div style={{fontSize:10,fontWeight:700,color:'#81BFB7',textTransform:'uppercase',letterSpacing:1,marginBottom:4}}>Цвят</div>}
+                          <input style={inp} placeholder="напр. Rose Gold, White..." value={c.name||''} onChange={e=>setColor(g.id,t.id,ci,'name',e.target.value)} />
+                        </div>
+                        <div>
+                          {ci===0 && <div style={{fontSize:10,fontWeight:700,color:'#81BFB7',textTransform:'uppercase',letterSpacing:1,marginBottom:4}}>Брой кластри</div>}
+                          <input style={inp} type="number" min={0} max={clusters} value={c.clusters||''} placeholder={ci===colors.length-1?`авт. ${remaining}`:''} onChange={e=>setColor(g.id,t.id,ci,'clusters',+e.target.value)} />
+                        </div>
+                        <div>
+                          {ci===0 && <div style={{fontSize:10,fontWeight:700,color:'#81BFB7',textTransform:'uppercase',letterSpacing:1,marginBottom:4}}>Балони</div>}
+                          <div style={{padding:'10px 13px',background:'#FFD3DD',borderRadius:8,fontWeight:700,color:'#3a2a35',fontSize:13}}>
+                            {(c.clusters || (ci===colors.length-1?remaining:0)) * t.main_per_cluster} бр
+                          </div>
+                        </div>
+                        <button onClick={()=>{
+                          set('garlands', state.garlands.map(gg => gg.id!==g.id ? gg : {
+                            ...gg,
+                            templates: gg.templates.map(tt => tt.id!==t.id ? tt : {
+                              ...tt,
+                              colors: (tt.colors||[]).filter((_,i) => i!==ci)
+                            })
+                          }))
+                        }} style={{background:'none',border:'none',color:'#F3A2BE',cursor:'pointer',fontSize:20,paddingBottom:4}}>×</button>
+                      </div>
+
+                      {/* STUFFING цвят */}
+                      {t.stuffing_percent > 0 && (
+                        <div style={{display:'grid',gridTemplateColumns:'2fr 1fr',gap:8,paddingTop:8,borderTop:'1px dashed #FFD3DD'}}>
+                          <div>
+                            <div style={{fontSize:10,fontWeight:700,color:'#F3A2BE',textTransform:'uppercase',letterSpacing:1,marginBottom:4}}>🎈 Вътрешен цвят (stuffing)</div>
+                            <input style={inp} placeholder={`= ${c.name||'същия цвят'}`} value={c.stuffing_color||''} onChange={e=>setColor(g.id,t.id,ci,'stuffing_color',e.target.value)} />
+                          </div>
+                          <div>
+                            <div style={{fontSize:10,fontWeight:700,color:'#F3A2BE',textTransform:'uppercase',letterSpacing:1,marginBottom:4}}>Брой за stuffing</div>
+                            <div style={{padding:'10px 13px',background:'#FFD3DD',borderRadius:8,fontWeight:700,color:'#3a2a35',fontSize:13}}>
+                              {Math.ceil((c.clusters || (ci===colors.length-1?remaining:0)) * t.main_per_cluster * t.stuffing_percent / 100)} бр
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+
+                  {/* Оставащи кластри */}
+                  {remaining > 0 && colors.length > 0 && (
+                    <div style={{fontSize:12,color:'#c0392b',fontWeight:700,marginBottom:8}}>
+                      ⚠️ Оставащи {remaining} кластра без цвят
+                    </div>
+                  )}
+
+                  <button onClick={()=>{
+                    set('garlands', state.garlands.map(gg => gg.id!==g.id ? gg : {
+                      ...gg,
+                      templates: gg.templates.map(tt => tt.id!==t.id ? tt : {
+                        ...tt,
+                        colors: [...(tt.colors||[]), {name:'', clusters:0, stuffing_color:''}]
+                      })
+                    }))
+                  }} style={{width:'100%',padding:'8px',background:'linear-gradient(135deg,#FFD3DD,#F3A2BE)',border:'none',borderRadius:8,color:'#fff',fontWeight:700,cursor:'pointer',fontSize:12}}>
+                    + Добави цвят
+                  </button>
+                </div>
+              )
+            })}
+          </div>
+        ))}
+
+        {/* СПИСЪК ЗА ПОРЪЧКА */}
+        {Object.keys(shoppingList).length > 0 && (
+          <div style={{background:'#fff',border:'2px solid #81BFB7',borderRadius:16,padding:20,marginTop:8}}>
+            <div style={{fontSize:12,fontWeight:900,color:'#81BFB7',textTransform:'uppercase',letterSpacing:1.5,marginBottom:16,paddingBottom:8,borderBottom:'2px solid #C6E6E3'}}>
+              🛒 Списък за поръчка
+            </div>
+
+            <div style={{display:'grid',gridTemplateColumns:'2fr 1fr 1fr 1fr 1fr',gap:8,marginBottom:8}}>
+              {['Цвят','Размер','Основни','+ Буфер','ПОРЪЧАЙ'].map(h=>(
+                <div key={h} style={{fontSize:10,fontWeight:700,color:'#81BFB7',textTransform:'uppercase',letterSpacing:1}}>{h}</div>
+              ))}
+            </div>
+
+            {Object.values(shoppingList).map((item,i) => {
+              const buf = getBuffer(item.size)
+              const withBuf = Math.ceil(item.count * (1 + buf))
+              return (
+                <div key={i} style={{display:'grid',gridTemplateColumns:'2fr 1fr 1fr 1fr 1fr',gap:8,padding:'8px 0',borderBottom:'1px solid #F0F9F8',alignItems:'center'}}>
+                  <div style={{fontWeight:600,color:'#3a2a35',fontSize:13}}>{item.name}</div>
+                  <div style={{fontSize:13,color:'#81BFB7'}}>{item.size}"</div>
+                  <div style={{fontWeight:700,color:'#3a2a35'}}>{item.count} бр</div>
+                  <div style={{fontSize:12,color:'#F3A2BE'}}>+{Math.ceil(item.count*buf)} бр ({Math.round(buf*100)}%)</div>
+                  <div style={{fontWeight:900,color:'#fff',background:'#81BFB7',borderRadius:8,padding:'4px 10px',textAlign:'center'}}>{withBuf} бр</div>
+                </div>
+              )
+            })}
+
+            {/* STUFFING СПИСЪК */}
+            {Object.keys(stuffingList).length > 0 && (
+              <div style={{marginTop:16,paddingTop:16,borderTop:'2px dashed #FFD3DD'}}>
+                <div style={{fontSize:11,fontWeight:700,color:'#F3A2BE',textTransform:'uppercase',letterSpacing:1,marginBottom:10}}>
+                  🎈 Допълнителни за Stuffing (балон в балон)
+                </div>
+                {Object.values(stuffingList).map((item,i) => (
+                  <div key={i} style={{display:'grid',gridTemplateColumns:'2fr 1fr 1fr',gap:8,padding:'6px 0',borderBottom:'1px solid #F0F9F8',fontSize:13}}>
+                    <div style={{fontWeight:600,color:'#3a2a35'}}>{item.name} (вътрешен)</div>
+                    <div style={{color:'#81BFB7'}}>{item.size}"</div>
+                    <div style={{fontWeight:700,color:'#F3A2BE'}}>{item.count} бр</div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* ОБЩО */}
+            <div style={{marginTop:16,padding:'12px 16px',background:'linear-gradient(135deg,#FFD3DD,#F3A2BE)',borderRadius:12,display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+              <span style={{fontWeight:700,color:'#fff',fontSize:14}}>ОБЩО ЗА ПОРЪЧКА</span>
+              <span style={{fontWeight:900,color:'#fff',fontSize:18}}>
+                {Object.values(shoppingList).reduce((s,i) => s + Math.ceil(i.count*(1+getBuffer(i.size))), 0) +
+                 Object.values(stuffingList).reduce((s,i) => s + i.count, 0)} бр
+              </span>
+            </div>
+          </div>
+        )}
+      </div>
+    )
+  }
+
   const PAGES = {
     1: <Tab1 />,
     2: <Tab2 />,
+    3: <Tab3 />,
   }
 
   return (
