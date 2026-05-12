@@ -10,6 +10,7 @@ import OfferPage from './OfferPage.jsx';
 import CalculatorPage from './CalculatorPage.jsx';
 import { supabase } from './supabaseClient';
 import SettingsPage from './SettingsPage.jsx'
+import NewCalculator from './NewCalculator.jsx'
 
 const DAYS = ['П','В','С','Ч','П','С','Н'];
 const MONTHS = ['Януари','Февруари','Март','Април','Май','Юни','Юли','Август','Септември','Октомври','Ноември','Декември'];
@@ -54,6 +55,7 @@ const Dashboard = () => {
   const offset = firstDay === 0 ? 6 : firstDay - 1
   const daysInMonth = new Date(year, month + 1, 0).getDate()
   const [showSettings, setShowSettings] = useState(false)
+  const [showNewCalc, setShowNewCalc] = useState(false)
 
   useEffect(() => {
     fetch('https://api.open-meteo.com/v1/forecast?latitude=42.62&longitude=25.4&current=temperature_2m,weathercode,windspeed_10m&daily=weathercode,temperature_2m_max,temperature_2m_min&timezone=Europe%2FSofia&forecast_days=7')
@@ -102,6 +104,7 @@ const Dashboard = () => {
   if (showSettings) return <SettingsPage onBack={() => setShowSettings(false)} />
   if (showInventory) return <InventoryPage onBack={() => setShowInventory(false)} />
   if (showThemes) return <ThemesPage onBack={() => setShowThemes(false)} />
+  if (showNewCalc) return <NewCalculator onBack={() => setShowNewCalc(false)} />
   if (showOffers) return <OfferPage onBack={() => { setShowOffers(false); setOpenNewOffer(false); setCalcOfferData(null) }} prefillInquiry={calcOfferData} openNew={openNewOffer || !!calcOfferData} />
   if (showCalculator) return <CalculatorPage inquiry={calcOfferData} onBack={() => { setShowCalculator(false); setCalcOfferData(null) }} onCreateOffer={(data) => { setCalcOfferData(data); setShowCalculator(false); setShowOffers(true) }} />
   if (showInquiries) return (
@@ -198,6 +201,7 @@ const Dashboard = () => {
         <button onClick={() => setShowCalculator(true)} style={{ padding:'10px 16px', borderRadius:12, border:'1px solid #C6E6E3', background:'rgba(255,255,255,0.7)', color:'#81BFB7', fontWeight:800, fontSize:12, cursor:'pointer', display:'flex', alignItems:'center', gap:6 }}>
           <svg width="16" height="16" viewBox="0 0 36 36"><rect width="36" height="36" rx="10" fill="#F3A2BE" opacity="0.4"/><rect x="6" y="6" width="24" height="24" rx="6" fill="white" opacity="0.9"/><rect x="9" y="9" width="18" height="5" rx="2" fill="#F3A2BE"/><rect x="9" y="17" width="5" height="5" rx="1.5" fill="#F3A2BE"/><rect x="15.5" y="17" width="5" height="5" rx="1.5" fill="#F3A2BE"/><rect x="22" y="17" width="5" height="5" rx="1.5" fill="#F3A2BE"/></svg>
           Калкулатор
+        {navBtn('Нов Калк.','🆕',()=>setShowNewCalc(true),'linear-gradient(135deg,#81BFB7,#C6E6E3)')}
         </button>
       </div>
 
