@@ -1608,11 +1608,276 @@ export default function NewCalculator({ onBack, inquiry, onCreateOffer }) {
             📄 Свали PDF калкулация
           </button>
           <button onClick={()=>{
-            // TODO: Работен лист
-            alert('Работен лист — скоро!')
+            const calc = buildCalc()
+            const t = settings.times || {}
+            const INFLATE_SEC = { 5:8, 10:22, 11:24, 12:26, 16:35, 18:40, 24:55, 36:80 }
+
+            const calcClusters = (lengthCm, sizeInch, perCluster) => {
+              const price = balloonPrices.find(p => p.size_inch === sizeInch)
+              const diamCm = price?.size_cm || (sizeInch * 2.54)
+              const factor = perCluster <= 4 ? 4.8 : 6.3
+              return Math.ceil((lengthCm / diamCm) * factor / perCluster)
+            }
+
+            const subMins = (time, m) => {
+              if (!time) return ''
+              const [h, min] = time.split(':').map(Number)
+              let total = h * 60 + min - m
+              total = ((total % 1440) + 1440) % 1440
+              return `${String(Math.floor(total/60)).padStart(2,'0')}:${String(total%60).padStart(2,'0')}`
+            }
+
+            // Генерираме работния лист
+            let garlandsHTML = ''
+
+            state.garlands.forEach((g, gi) => {
+              // Събираме всички балони за сортиране
+              let sortList = {}
+              let stuffingList = []
+              let clusterSteps = []
+              let schemeLetters = []
+
+              g.templates.forEach((tmpl, ti) => {
+                const clusters = tmpl.cluster_count || calcClusters(g.length_cm, tmpl.main_size_inch, tmpl.main_per_cluster)
+                const letter = String.fromCharCode(65 + ti) // А, Б, В...
+                const colors = tmpl.colors || []
+
+                // Схема
+                for (let i = 0; i < clusters; i++) schemeLetters.push(letter)
+
+                // Сортиране
+                colors.forEach((c, ci) => {
+                  const usedByPrev = colors.slice(0,ci).reduce((s,x)=>s+(x.clusters||0),0)
+                  const remaining = clusters - colors.slice(0,ci).reduce((s,x)=>s+(x.clusters||0),0)
+                  const clCount = c.clusters || (ci===colors.length-1 ? remaining : 0)
+                  if (!clCount || !c.name) return
+
+                  const mainKey = `${c.name} ${tmpl.main_size_inch}"`
+                  sortList[mainKey] = (sortList[mainKey]||0) + clCount * tmpl.main_per_cluster
+                  if (tmpl.has_small) {
+                    const smallKey = `${c.name} 5"`
+                    sortList[smallKey] = (sortList[smallKey]||0) + clCount * tmpl.small_per_cluster
+                  }
+                  if (tmpl.has_large) {
+                    const largeKey = `${c.name} 18"`
+                    sortList[largeKey] = (sortList[largeKey]||0) + clCount * tmpl.large_per_cluster
+                  }
+
+                  // Stuffing
+                  if (tmpl.stuffing_percent > 0) {
+                    const stuffCount = Math.ceil(clCount * tmpl.main_per_cluster * tmpl.stuffing_percent / 100)
+                    stuffingList.push(`${c.name} ${tmpl.main_size_inch}" → пъхни вътре ${stuffCount} бр ${c.stuffing_color||c.name} ${tmpl.main_size_inch}"`)
+                  }
+                })
+
+                // Кластри
+                let clusterDesc = `${clusters} кластра × ${tmpl.main_per_cluster} бр ${tmpl.main_size_inch}"`
+                if (tmpl.has_small) clusterDesc += ` + ${tmpl.small_per_cluster} бр 5"`
+                if (tmpl.has_large) clusterDesc += ` + ${tmpl.large_per_cluster} бр 18"`
+                if (tmpl.stuffing_percent > 0) clusterDesc += ` · ${tmpl.stuffing_percent}% балон в балон`
+
+                let colorsDesc = colors.filter(c=>c.name).map((c,ci) => {
+                  const usedByPrev = colors.slice(0,ci).reduce((s,x)=>s+(x.clusters||0),0)
+                  const remaining = clusters - usedByPrev
+                  const clCount = c.clusters || (ci===colors.length-1?remaining:0)
+                  return `<div style="margin:4px 0;padding:6px 10px;background:#fff;border-radius:6px;border-left:3px solid #F3A2BE">
+                    <strong>${clCount} кластра ${c.name}:</strong>
+                    ${tmpl.main_per_cluster} бр ${c.name} ${tmpl.main_size_inch}"
+                    ${tmpl.has_small ? `+ ${tmpl.small_per_cluster} бр ${c.name} 5"` : ''}
+                    ${tmpl.has_large ? `+ ${tmpl.large_per_cluster} бр ${c.name} 18"` : ''}
+                    ${tmpl.stuffing_percent > 0 ? `<br><span style="color:#F3A2BE;font-size:11px">→ ${Math.ceil(clCount*tmpl.main_per_cluster*tmpl.stuffing_percent/100)} бр stuffing с ${c.stuffing_color||c.name}</span>` : ''}
+                  </div>`
+                }).join('')
+
+                clusterSteps.push(`
+                  <div style="margin-bottom:10px">
+                    <div style="font-weight:700;color:#3a2a35;margin-bottom:6px">Шаблон ${letter}: ${clusterDesc}</div>
+                    ${colorsDesc}
+                  </div>
+                `)
+              })
+
+              // Автоматична схема
+              const autoScheme = schemeLetters.join(' · ')
+
+              // Надуване
+              let inflateHTML = ''
+              Object.entries(sortList).forEach(([key, count], i) => {
+                const size = parseInt(key.match(/\d+/)?.[0]||10)
+                const mins = Math.ceil(count * (INFLATE_SEC[size]||22) / 60)
+                inflateHTML += `<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid #f0f0f0;font-size:13px">
+                  <span>Купчина ${i+1}: ${key}</span>
+                  <span><strong>${count} бр</strong> · ~${mins} мин</span>
+                </div>`
+              })
+
+              garlandsHTML += `
+                <div style="margin-bottom:24px;padding:16px;border:2px solid #FFD3DD;border-radius:12px">
+                  <div style="font-size:16px;font-weight:900;color:#F3A2BE;margin-bottom:16px;padding-bottom:8px;border-bottom:2px solid #FFD3DD">
+                    🎈 ${g.name} — ${g.length_cm} см
+                  </div>
+
+                  <div style="margin-bottom:14px">
+                    <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#81BFB7;margin-bottom:8px">📦 Стъпка 1 — Сортирай балоните</div>
+                    ${Object.entries(sortList).map(([key, count], i) => `
+                      <div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid #f0f0f0;font-size:13px">
+                        <span>${key}</span>
+                        <span><strong>${count} бр</strong> → Купчина ${i+1}</span>
+                      </div>`).join('')}
+                  </div>
+
+                  ${stuffingList.length > 0 ? `
+                  <div style="margin-bottom:14px">
+                    <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#81BFB7;margin-bottom:8px">🎈 Стъпка 2 — Stuffing (балон в балон)</div>
+                    ${stuffingList.map(s => `<div style="padding:5px 0;border-bottom:1px solid #f0f0f0;font-size:13px">${s}</div>`).join('')}
+                  </div>` : ''}
+
+                  <div style="margin-bottom:14px">
+                    <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#81BFB7;margin-bottom:8px">💨 Стъпка 3 — Надуй</div>
+                    ${inflateHTML}
+                  </div>
+
+                  <div style="margin-bottom:14px">
+                    <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#81BFB7;margin-bottom:8px">🔗 Стъпка 4 — Направи кластри</div>
+                    ${clusterSteps.join('')}
+                  </div>
+
+                  <div style="margin-bottom:14px">
+                    <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#81BFB7;margin-bottom:8px">📍 Стъпка 5 — Схема на наредба</div>
+                    <div style="padding:10px;background:#F0F9F8;border-radius:8px;font-size:14px;font-weight:700;letter-spacing:2px;color:#3a2a35">${autoScheme}</div>
+                  </div>
+                </div>
+              `
+            })
+
+            // Timeline монтаж
+            const buildTLHTML = (rows, title, color) => {
+              if (!rows || rows.length === 0) return ''
+              return `
+                <div style="margin-bottom:16px;padding:16px;border:2px solid ${color};border-radius:12px">
+                  <div style="font-size:13px;font-weight:900;text-transform:uppercase;letter-spacing:1px;color:${color};margin-bottom:12px;padding-bottom:8px;border-bottom:2px solid ${color}">${title}</div>
+                  ${rows.map(r => `
+                    <div style="display:flex;gap:12px;align-items:flex-start;margin-bottom:8px">
+                      <div style="min-width:54px;padding:4px 8px;background:${r.isEvent?color:'#fff'};color:${r.isEvent?'#fff':color};border:1.5px solid ${color};font-size:13px;font-weight:700;text-align:center;border-radius:6px">${r.time||''}</div>
+                      <div>
+                        <div style="font-weight:700;font-size:13px;color:${r.isEvent?color:'#3a2a35'}">${r.label}</div>
+                        ${r.note?`<div style="font-size:11px;color:#81BFB7">${r.note}</div>`:''}
+                      </div>
+                    </div>`).join('')}
+                </div>`
+            }
+
+            // Вземаме TL от Tab6
+            const t6Data = (() => {
+              const tSettings = settings.times || {}
+              const calcC = (lengthCm, sizeInch, perCluster) => {
+                const price = balloonPrices.find(p => p.size_inch === sizeInch)
+                const diamCm = price?.size_cm || (sizeInch * 2.54)
+                const factor = perCluster <= 4 ? 4.8 : 6.3
+                return Math.ceil((lengthCm / diamCm) * factor / perCluster)
+              }
+              let tc = 0, tim = 0, tsm = 0, tcam = 0
+              const INF = { 5:8, 10:22, 11:24, 12:26, 16:35, 18:40, 24:55, 36:80 }
+              state.garlands.forEach(g => {
+                g.templates.forEach(t2 => {
+                  const cl = t2.cluster_count || calcC(g.length_cm, t2.main_size_inch, t2.main_per_cluster)
+                  tc += cl
+                  const mc = cl * t2.main_per_cluster
+                  const sc = t2.has_small ? cl * t2.small_per_cluster : 0
+                  const lc = t2.has_large ? cl * t2.large_per_cluster : 0
+                  tim += Math.ceil((mc*(INF[t2.main_size_inch]||22)+sc*8+lc*40)/60)
+                  if (t2.stuffing_percent>0) tsm += Math.ceil((mc+sc)*t2.stuffing_percent/100*(tSettings.stuffing_sec_per_balloon||20)/60)
+                  tcam += Math.ceil(cl*(tSettings.cluster_assembly_sec||45)/60)
+                })
+              })
+              const extHome = (state.extras||[]).reduce((s,e)=>s+(e.prep_at_home?(+e.prep_home_min||0):0),0)
+              const extLoc = (state.extras||[]).reduce((s,e)=>{let tot=e.prep_at_location?(+e.prep_location_min||0):0;tot+=(+e.placement_min||0);return s+tot},0)
+              const cam = Math.ceil(tc*(tSettings.cluster_attachment_sec||45)/60)
+              const locMin = (tSettings.unpacking_min||15)+(tSettings.space_prep_min||10)+(tSettings.arch_assembly_min||15)+(tSettings.cover_placement_min||5)+cam+extLoc+(tSettings.final_corrections_min||10)+(tSettings.photo_time_min||10)
+              const dismMin = Math.ceil(locMin*((tSettings.dismantling_percent||50)/100))
+              const bf = tSettings.buffer_finish_min||10
+              const bb = tSettings.buffer_before_min||15
+
+              const buildSL = () => {
+                if (!state.event_start) return []
+                const et = state.event_start.slice(0,5)
+                const rt = subMins(et, bf)
+                const steps = []
+                if (tSettings.photo_time_min>0) steps.push({label:'📸 Снимки',mins:tSettings.photo_time_min||10,note:`${tSettings.photo_time_min||10} мин`})
+                if (extLoc>0) steps.push({label:'✨ Допълнения',mins:extLoc,note:`${extLoc} мин`})
+                steps.push({label:'🔧 Финални корекции',mins:tSettings.final_corrections_min||10,note:`${tSettings.final_corrections_min||10} мин`})
+                steps.push({label:'📍 Закачане кластри',mins:cam,note:`${tc} кластра · ${cam} мин`})
+                steps.push({label:'🏗️ Сглобяване арка',mins:tSettings.arch_assembly_min||15,note:`${tSettings.arch_assembly_min||15} мин`})
+                steps.push({label:'📦 Разопаковане',mins:(tSettings.unpacking_min||15)+(tSettings.space_prep_min||10),note:`${(tSettings.unpacking_min||15)+(tSettings.space_prep_min||10)} мин`})
+                if (state.travel_min>0) steps.push({label:'🚗 Пристигане',mins:+state.travel_min,note:`${state.travel_km||0} км`})
+                if (tim>0) steps.push({label:'🎈 Надуване',mins:tim+tsm+tcam,note:`надуване ${tim} мин · сглобяване ${tcam} мин`})
+                if (extHome>0) steps.push({label:'✍️ Изработка вкъщи',mins:extHome,note:`${extHome} мин`})
+                if (state.travel_min>0||bb>0) steps.push({label:'🚗 Тръгни',mins:(+state.travel_min||0)+bb,note:`пътуване + ${bb} мин резерв`})
+                const rows=[]
+                let cur=rt
+                for(let i=0;i<steps.length;i++){if(steps[i].mins>0)cur=subMins(cur,steps[i].mins);rows.push({time:cur,label:steps[i].label,note:steps[i].note})}
+                rows.reverse()
+                if(bf>0)rows.push({time:rt,label:`✅ Готово (${bf} мин резерв)`,note:''})
+                rows.push({time:et,label:'🎉 Събитието започва',note:'',isEvent:true})
+                return rows
+              }
+
+              const buildDL = () => {
+                const dt = state.dismantle_same_day ? state.event_end?.slice(0,5) : state.dismantle_time?.slice(0,5)
+                if (!dt) return []
+                const dismSteps = []
+                dismSteps.push({label:'📍 Демонтаж',mins:dismMin,note:`${tSettings.dismantling_percent||50}% от монтажа · ${dismMin} мин`})
+                if (state.travel_min>0) dismSteps.push({label:'🚗 Пристигане',mins:+state.travel_min,note:`${state.travel_km||0} км`})
+                if (state.travel_min>0||bb>0) dismSteps.push({label:'🚗 Тръгни',mins:(+state.travel_min||0)+bb,note:`+ ${bb} мин резерв`})
+                const rows=[]
+                let cur=dt
+                for(let i=0;i<dismSteps.length;i++){if(dismSteps[i].mins>0)cur=subMins(cur,dismSteps[i].mins);rows.push({time:cur,label:dismSteps[i].label,note:dismSteps[i].note})}
+                rows.reverse()
+                rows.push({time:dt,label:'✅ Демонтаж завършен',note:'',isEvent:true})
+                return rows
+              }
+
+              return { setupTL: buildSL(), dismTL: buildDL() }
+            })()
+
+            const html = `<!DOCTYPE html><html><head><meta charset="UTF-8">
+              <style>
+                body{font-family:'Segoe UI',Arial,sans-serif;color:#3a2a35;margin:0;padding:24px;font-size:13px;background:#fff;}
+                h1{color:#F3A2BE;font-size:22px;margin-bottom:4px;}
+                .subtitle{color:#81BFB7;font-size:13px;margin-bottom:20px;}
+                .section-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#81BFB7;margin:14px 0 8px;}
+                @media print{body{padding:12px;} button{display:none!important;}}
+              </style>
+            </head><body>
+              <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px">
+                <div>
+                  <h1>🎈 Работен лист</h1>
+                  <div class="subtitle">
+                    ${state.event_type||'Събитие'} · ${state.event_date||'—'} · ${state.event_start||'—'}
+                    ${state.location ? `· ${state.location}` : ''}
+                    ${state.client_name ? `<br>Клиент: ${state.client_name}` : ''}
+                  </div>
+                </div>
+                <button onclick="window.print()" style="padding:8px 16px;background:#F3A2BE;color:#fff;border:none;border-radius:8px;cursor:pointer;font-weight:700">🖨️ Принтирай</button>
+              </div>
+
+              ${garlandsHTML}
+
+              ${buildTLHTML(t6Data.setupTL, '📅 Timeline — Монтаж', '#F3A2BE')}
+              ${buildTLHTML(t6Data.dismTL, '📦 Timeline — Демонтаж', '#81BFB7')}
+
+              <div style="margin-top:20px;padding:12px;background:#F0F9F8;border-radius:8px;font-size:11px;color:#81BFB7;text-align:center">
+                Генерирано с BalloonPro · ${new Date().toLocaleDateString('bg-BG')}
+              </div>
+            </body></html>`
+
+            const w = window.open('','_blank','width=900,height=1100')
+            w.document.write(html)
+            w.document.close()
           }} style={{flex:1,padding:'14px',background:'linear-gradient(135deg,#FFD3DD,#F3A2BE)',border:'none',borderRadius:12,color:'#fff',fontWeight:700,cursor:'pointer',fontSize:13}}>
             📋 Работен лист
           </button>
+                     
           <button onClick={()=>{
             if (onCreateOffer) onCreateOffer(calc)
           }} style={{flex:1,padding:'14px',background:'linear-gradient(135deg,#F3A2BE,#81BFB7)',border:'none',borderRadius:12,color:'#fff',fontWeight:800,cursor:'pointer',fontSize:13}}>
