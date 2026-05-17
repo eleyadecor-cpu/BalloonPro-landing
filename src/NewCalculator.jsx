@@ -36,8 +36,11 @@ const INIT = {
   dismantle_same_day: true,
   dismantle_date: '',
   dismantle_time: '',
+  // Таб 7 — Транспорт
   travel_km: 0,
   travel_min: 0,
+  // Таб 8 — наем
+  rentals: [],
   // Таб 9 — Ценообразуване
   margin: 30,
   margin_type: 'percent',
@@ -1234,6 +1237,90 @@ export default function NewCalculator({ onBack, inquiry, onCreateOffer }) {
       </div>
     )
   }
+  const Tab8 = () => {
+    const addRental = () => {
+      set('rentals', [...(state.rentals||[]), {
+        id: Date.now(),
+        name: '',
+        supplier: '',
+        price_per_day: 0,
+        days: 1,
+      }])
+    }
+
+    const updateRental = (id, field, value) => {
+      set('rentals', (state.rentals||[]).map(r => r.id===id ? {...r,[field]:value} : r))
+    }
+
+    const removeRental = (id) => {
+      set('rentals', (state.rentals||[]).filter(r => r.id!==id))
+    }
+
+    const totalRental = (state.rentals||[]).reduce((s,r) => s + (+r.price_per_day||0) * (+r.days||1), 0)
+
+    return (
+      <div>
+        {(state.rentals||[]).length === 0 && (
+          <div style={{textAlign:'center',padding:40,color:'#81BFB7',background:'rgba(255,255,255,0.7)',borderRadius:20,marginBottom:16}}>
+            Няма наети артикули — добави ако имаш
+          </div>
+        )}
+
+        {(state.rentals||[]).map((r,i) => (
+          <div key={r.id} style={{background:'#fff',border:'2px solid #FFD3DD',borderRadius:16,padding:20,marginBottom:12}}>
+            <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:14}}>
+              <div style={{fontSize:13,fontWeight:700,color:'#F3A2BE'}}>📦 Артикул под наем {i+1}</div>
+              <button onClick={()=>removeRental(r.id)} style={{background:'#FFD3DD',border:'none',borderRadius:8,color:'#c0392b',cursor:'pointer',fontWeight:700,padding:'6px 12px'}}>🗑️</button>
+            </div>
+
+            <div style={{display:'grid',gridTemplateColumns:'2fr 1fr',gap:12,marginBottom:12}}>
+              <div>
+                <div style={{fontSize:11,fontWeight:700,color:'#81BFB7',textTransform:'uppercase',letterSpacing:1,marginBottom:6}}>Артикул</div>
+                <input style={inp} placeholder="напр. Арка голяма, Неон надпис..." value={r.name||''} onChange={e=>updateRental(r.id,'name',e.target.value)} />
+              </div>
+              <div>
+                <div style={{fontSize:11,fontWeight:700,color:'#81BFB7',textTransform:'uppercase',letterSpacing:1,marginBottom:6}}>Доставчик</div>
+                <input style={inp} placeholder="От кого наемаш..." value={r.supplier||''} onChange={e=>updateRental(r.id,'supplier',e.target.value)} />
+              </div>
+            </div>
+
+            <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:12}}>
+              <div>
+                <div style={{fontSize:11,fontWeight:700,color:'#81BFB7',textTransform:'uppercase',letterSpacing:1,marginBottom:6}}>Цена (€/ден)</div>
+                <input style={inp} type="number" min={0} step={0.5} value={r.price_per_day||0} onChange={e=>updateRental(r.id,'price_per_day',+e.target.value)} />
+              </div>
+              <div>
+                <div style={{fontSize:11,fontWeight:700,color:'#81BFB7',textTransform:'uppercase',letterSpacing:1,marginBottom:6}}>Дни</div>
+                <input style={inp} type="number" min={1} step={1} value={r.days||1} onChange={e=>updateRental(r.id,'days',+e.target.value)} />
+              </div>
+              <div>
+                <div style={{fontSize:11,fontWeight:700,color:'#81BFB7',textTransform:'uppercase',letterSpacing:1,marginBottom:6}}>Общо</div>
+                <div style={{padding:'10px 13px',background:'#FFD3DD',borderRadius:8,fontWeight:700,color:'#3a2a35',fontSize:14}}>
+                  €{((r.price_per_day||0)*(r.days||1)).toFixed(2)}
+                </div>
+              </div>
+            </div>
+          </div>
+        ))}
+
+        <button onClick={addRental} style={{width:'100%',padding:'14px',background:'linear-gradient(135deg,#FFD3DD,#F3A2BE)',border:'none',borderRadius:12,color:'#fff',fontWeight:800,cursor:'pointer',fontSize:14,marginBottom:16}}>
+          + Добави артикул под наем
+        </button>
+
+        {(state.rentals||[]).length > 0 && (
+          <div style={{background:'linear-gradient(135deg,#C6E6E3,#81BFB7)',borderRadius:16,padding:20}}>
+            <div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+              <div style={{fontSize:14,fontWeight:900,color:'#fff'}}>ОБЩО НАЕМ</div>
+              <div style={{fontSize:20,fontWeight:900,color:'#fff'}}>€{totalRental.toFixed(2)}</div>
+            </div>
+            <div style={{fontSize:11,color:'rgba(255,255,255,0.8)',marginTop:4}}>
+              {(state.rentals||[]).length} артикула под наем · скрито в крайната цена
+            </div>
+          </div>
+        )}
+      </div>
+    )
+  }
   const renderTab = () => {
     if (step === 1) return Tab1()
     if (step === 2) return Tab2()
@@ -1241,7 +1328,8 @@ export default function NewCalculator({ onBack, inquiry, onCreateOffer }) {
     if (step === 4) return Tab4()
     if (step === 5) return Tab5()
     if (step === 6) return Tab6()
-    if (step === 7) return Tab7()  
+    if (step === 7) return Tab7()
+    if (step === 8) return Tab8()    
     return <div style={{textAlign:'center',padding:60,color:'#81BFB7'}}>🚧 Скоро...</div>
   }
 
