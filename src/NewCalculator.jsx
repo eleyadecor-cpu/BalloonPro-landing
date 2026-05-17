@@ -36,6 +36,8 @@ const INIT = {
   dismantle_same_day: true,
   dismantle_date: '',
   dismantle_time: '',
+  travel_km: 0,
+  travel_min: 0,
   // Таб 9 — Ценообразуване
   margin: 30,
   margin_type: 'percent',
@@ -1164,7 +1166,74 @@ export default function NewCalculator({ onBack, inquiry, onCreateOffer }) {
       </div>
     )
   }
+  const Tab7 = () => {
+    const f = settings.finances || {}
 
+    const fuelCost = (state.travel_km||0) * 2 * ((f.fuel_per_100km||8) / 100) * (f.fuel_price_per_liter||2.65)
+    const amortCost = (state.travel_km||0) * 2 * (f.amort_per_km||0.35)
+    const totalTransport = fuelCost + amortCost
+
+    return (
+      <div>
+        <div style={{background:'#fff',border:'2px solid #FFD3DD',borderRadius:16,padding:20,marginBottom:16}}>
+          <div style={{fontSize:12,fontWeight:900,color:'#F3A2BE',textTransform:'uppercase',letterSpacing:1.5,marginBottom:16,paddingBottom:8,borderBottom:'2px solid #FFD3DD'}}>
+            🚗 Локация и транспорт
+          </div>
+
+          <div style={{marginBottom:12}}>
+            <div style={{fontSize:11,fontWeight:700,color:'#81BFB7',textTransform:'uppercase',letterSpacing:1,marginBottom:6}}>Адрес / Локация</div>
+            <input style={inp} placeholder="напр. Зала Кристал, Казанлък..." value={state.location||''} onChange={e=>set('location',e.target.value)} />
+            <div style={{fontSize:11,color:'#81BFB7',marginTop:4}}>💡 Въведи адреса ръчно и после попълни км и мин</div>
+          </div>
+
+          <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12,marginBottom:16}}>
+            <div>
+              <div style={{fontSize:11,fontWeight:700,color:'#81BFB7',textTransform:'uppercase',letterSpacing:1,marginBottom:6}}>Разстояние (км)</div>
+              <input style={inp} type="number" min={0} step={0.5} value={state.travel_km||0} onChange={e=>set('travel_km',+e.target.value)} />
+              <div style={{fontSize:11,color:'#81BFB7',marginTop:4}}>Само отиване — връщането се изчислява автоматично (×2)</div>
+            </div>
+            <div>
+              <div style={{fontSize:11,fontWeight:700,color:'#81BFB7',textTransform:'uppercase',letterSpacing:1,marginBottom:6}}>Пътуване (мин)</div>
+              <input style={inp} type="number" min={0} step={1} value={state.travel_min||0} onChange={e=>set('travel_min',+e.target.value)} />
+              <div style={{fontSize:11,color:'#81BFB7',marginTop:4}}>Само отиване</div>
+            </div>
+          </div>
+        </div>
+
+        {/* РАЗХОДИ */}
+        <div style={{background:'#fff',border:'2px solid #C6E6E3',borderRadius:16,padding:20}}>
+          <div style={{fontSize:12,fontWeight:900,color:'#81BFB7',textTransform:'uppercase',letterSpacing:1.5,marginBottom:16,paddingBottom:8,borderBottom:'2px solid #C6E6E3'}}>
+            💰 Транспортни разходи
+          </div>
+
+          <div style={{display:'grid',gridTemplateColumns:'2fr 1fr',gap:8,marginBottom:8}}>
+            {['Разход','Сума'].map(h=>(
+              <div key={h} style={{fontSize:10,fontWeight:700,color:'#81BFB7',textTransform:'uppercase',letterSpacing:1,textAlign:h==='Сума'?'right':'left'}}>{h}</div>
+            ))}
+          </div>
+
+          {[
+            [`⛽ Гориво (${(state.travel_km||0)*2} км × €${((f.fuel_per_100km||8)/100*f.fuel_price_per_liter||0).toFixed(3)}/км)`, fuelCost],
+            [`🔧 Амортизация (${(state.travel_km||0)*2} км × €${f.amort_per_km||0.35}/км)`, amortCost],
+          ].map(([label, value], i) => (
+            <div key={i} style={{display:'grid',gridTemplateColumns:'2fr 1fr',gap:8,padding:'8px 0',borderBottom:'1px solid #F0F9F8',fontSize:13}}>
+              <div style={{color:'#3a2a35'}}>{label}</div>
+              <div style={{fontWeight:700,color:'#F3A2BE',textAlign:'right'}}>€{value.toFixed(2)}</div>
+            </div>
+          ))}
+
+          <div style={{display:'grid',gridTemplateColumns:'2fr 1fr',gap:8,padding:'12px 16px',background:'linear-gradient(135deg,#C6E6E3,#81BFB7)',borderRadius:10,marginTop:10}}>
+            <div style={{fontWeight:700,color:'#fff',fontSize:14}}>ОБЩО ТРАНСПОРТ</div>
+            <div style={{fontWeight:900,color:'#fff',fontSize:18,textAlign:'right'}}>€{totalTransport.toFixed(2)}</div>
+          </div>
+
+          <div style={{fontSize:11,color:'#81BFB7',marginTop:10,textAlign:'center'}}>
+            От Настройки: гориво €{f.fuel_per_100km||8}/100км · цена €{f.fuel_price_per_liter||2.65}/л · амортизация €{f.amort_per_km||0.35}/км
+          </div>
+        </div>
+      </div>
+    )
+  }
   const renderTab = () => {
     if (step === 1) return Tab1()
     if (step === 2) return Tab2()
@@ -1172,6 +1241,7 @@ export default function NewCalculator({ onBack, inquiry, onCreateOffer }) {
     if (step === 4) return Tab4()
     if (step === 5) return Tab5()
     if (step === 6) return Tab6()
+    if (step === 7) return Tab7()  
     return <div style={{textAlign:'center',padding:60,color:'#81BFB7'}}>🚧 Скоро...</div>
   }
 
