@@ -1398,6 +1398,230 @@ export default function NewCalculator({ onBack, inquiry, onCreateOffer }) {
       </div>
     )
   }
+  // ГЛАВНА ФУНКЦИЯ ЗА ИЗЧИСЛЕНИЕ
+  const buildCalc = () => {
+    const t = settings.times || {}
+    const f = settings.finances || {}
+    const INFLATE_SEC = { 5:8, 10:22, 11:24, 12:26, 16:35, 18:40, 24:55, 36:80 }
+
+    const calcClusters = (lengthCm, sizeInch, perCluster) => {
+      const price = balloonPrices.find(p => p.size_inch === sizeInch)
+      const diamCm = price?.size_cm || (sizeInch * 2.54)
+      const factor = perCluster <= 4 ? 4.8 : 6.3
+      return Math.ceil((lengthCm / diamCm) * factor / perCluster)
+    }
+
+    // МАТЕРИАЛИ
+    let matBalloons = 0
+    let totalClusters = 0
+    let totalInflateMin = 0
+    let totalStuffingMin = 0
+    let totalClusterAssemblyMin = 0
+    let balloonList = {}
+
+    state.garlands.forEach(g => {
+      g.templates.forEach(t2 => {
+        const clusters = t2.cluster_count || calcClusters(g.length_cm, t2.main_size_inch, t2.main_per_cluster)
+        totalClusters += clusters
+        const mainCount = clusters * t2.main_per_cluster
+        const smallCount = t2.has_small ? clusters * t2.small_per_cluster : 0
+        const largeCount = t2.has_large ? clusters * t2.large_per_cluster : 0
+
+        // Цена на балоните
+        const mainPrice = balloonPrices.find(p => p.size_inch === t2.main_size_inch)?.price_per_unit || 0
+        const smallPrice = balloonPrices.find(p => p.size_inch === 5)?.price_per_unit || 0
+        const largePrice = balloonPrices.find(p => p.size_inch === 18)?.price_per_unit || 0
+        matBalloons += mainCount * mainPrice + smallCount * smallPrice + largeCount * largePrice
+
+        // Списък балони
+        const mkKey = (size, stuffing=false) => `${size}"${stuffing?' (вътрешен)':''}`
+        balloonList[mkKey(t2.main_size_inch)] = (balloonList[mkKey(t2.main_size_inch)]||0) + mainCount
+        if (t2.has_small) balloonList[mkKey(5)] = (balloonList[mkKey(5)]||0) + smallCount
+        if (t2.has_large) balloonList[mkKey(18)] = (balloonList[mkKey(18)]||0) + largeCount
+
+        // Stuffing
+        if (t2.stuffing_percent > 0) {
+          const stuffCount = Math.ceil((mainCount + smallCount) * t2.stuffing_percent / 100)
+          totalStuffingMin += Math.ceil(stuffCount * (t.stuffing_sec_per_balloon||20) / 60)
+          balloonList[mkKey(t2.main_size_inch, true)] = (balloonList[mkKey(t2.main_size_inch, true)]||0) + stuffCount
+          matBalloons += stuffCount * mainPrice
+        }
+
+        // Времена
+        totalInflateMin += Math.ceil((mainCount * (INFLATE_SEC[t2.main_size_inch]||22) + smallCount * 8 + largeCount * 40) / 60)
+        totalClusterAssemblyMin += Math.ceil(clusters * (t.cluster_assembly_sec||45) / 60)
+      })
+    })
+
+    // Буфер за дефекти
+    const bufferCost = matBalloons * ((f.defect_buffer_medium||7) / 100)
+    const matBalloonsFinal = matBalloons * (1 + (f.defect_buffer_medium||7) / 100)
+
+    // Допълнения
+    const matExtras = (state.extras||[]).reduce((s,e) => s + (+e.material_cost||0) + (+e.rental_cost||0), 0)
+    const extrasHomeMin = (state.extras||[]).reduce((s,e) => s + (e.prep_at_home ? (+e.prep_home_min||0) : 0), 0)
+    const extrasLocationMin = (state.extras||[]).reduce((s,e) => {
+      let total = e.prep_at_location ? (+e.prep_location_min||0) : 0
+      total += (+e.placement_min||0)
+      return s + total
+    }, 0)
+
+    // Наем
+    const matRentals = (state.rentals||[]).reduce((s,r) => s + (+r.price_per_day||0) * (+r.days||1), 0)
+
+    // Оборудване амортизация — от Настройки (ще добавим)
+    const matConsumables = f.consumables_per_event || 2
+    const matOverhead = f.overhead_per_event || 5
+
+    const totalMaterials = matBalloonsFinal + matExtras + matRentals + matConsumables + matOverhead
+
+    // ТРУД
+    const clusterAttachMin = Math.ceil(totalClusters * (t.cluster_attachment_sec||45) / 60)
+    const locationTotalMin = (t.unpacking_min||15) + (t.space_prep_min||10) + (t.arch_assembly_min||15) + (t.cover_placement_min||5) + clusterAttachMin + extrasLocationMin + (t.final_corrections_min||10) + (t.photo_time_min||10)
+    const dismantleMin = Math.ceil(locationTotalMin * ((t.dismantling_percent||50) / 100))
+
+    const homeMin = (+(t.consultation_min||0)) + (+(t.followup_min||0)) + (+(t.stock_check_min||0)) + (+(t.order_min||0)) + (+(t.sorting_min||0)) + extrasHomeMin + totalStuffingMin + totalInflateMin + totalClusterAssemblyMin + (+(t.car_loading_min||0))
+    const locationMin = locationTotalMin
+    const totalLaborMin = homeMin + locationMin + dismantleMin
+
+    const laborHome = (homeMin / 60) * (f.rate_inflation||10)
+    const laborLocation = (locationMin / 60) * (f.rate_installation||12)
+    const laborDismantle = (dismantleMin / 60) * (f.rate_dismantling||10)
+    const totalLabor = laborHome + laborLocation + laborDismantle
+
+    // ТРАНСПОРТ
+    const fuelCost = (state.travel_km||0) * 2 * ((f.fuel_per_100km||8) / 100) * (f.fuel_price_per_liter||2.65)
+    const amortCost = (state.travel_km||0) * 2 * (f.amort_per_km||0.35)
+    const totalTransport = fuelCost + amortCost
+
+    // СЕБЕСТОЙНОСТ
+    const costTotal = totalMaterials + totalLabor + totalTransport
+
+    // МАРЖ
+    let price = costTotal
+    if (state.margin_type === 'percent' && state.margin > 0) {
+      price = costTotal / (1 - state.margin / 100)
+    } else if (state.margin_type === 'amount') {
+      price = costTotal + (+state.margin||0)
+    }
+
+    // ОТСТЪПКА
+    let discountAmount = 0
+    if (state.discount_type === 'percent' && state.discount > 0) {
+      discountAmount = price * (state.discount / 100)
+    } else if (state.discount_type === 'amount') {
+      discountAmount = +state.discount || 0
+    }
+    const finalPrice = Math.max(0, price - discountAmount)
+
+    return {
+      matBalloons: matBalloonsFinal,
+      matExtras,
+      matRentals,
+      matConsumables,
+      matOverhead,
+      totalMaterials,
+      laborHome,
+      laborLocation,
+      laborDismantle,
+      totalLabor,
+      fuelCost,
+      amortCost,
+      totalTransport,
+      costTotal,
+      price,
+      discountAmount,
+      finalPrice,
+      totalLaborMin,
+      homeMin,
+      locationMin,
+      dismantleMin,
+      totalClusters,
+      balloonList,
+    }
+  }
+
+  const Tab10 = () => {
+    const calc = buildCalc()
+    const f = settings.finances || {}
+
+    const SummaryRow = ({label, value, sub, color='#3a2a35', bold=false}) => (
+      <div style={{display:'flex',justifyContent:'space-between',padding:'8px 0',borderBottom:'1px solid #F0F9F8',fontSize:13}}>
+        <div>
+          <span style={{color, fontWeight: bold?700:400}}>{label}</span>
+          {sub && <div style={{fontSize:10,color:'#81BFB7'}}>{sub}</div>}
+        </div>
+        <span style={{fontWeight:bold?900:600,color}}>{value}</span>
+      </div>
+    )
+
+    return (
+      <div>
+        {/* SUMMARY */}
+        <div style={{background:'#fff',border:'2px solid #FFD3DD',borderRadius:16,padding:20,marginBottom:16}}>
+          <div style={{fontSize:12,fontWeight:900,color:'#F3A2BE',textTransform:'uppercase',letterSpacing:1.5,marginBottom:16,paddingBottom:8,borderBottom:'2px solid #FFD3DD'}}>
+            📊 Ценова калкулация
+          </div>
+
+          <div style={{fontSize:11,fontWeight:700,color:'#81BFB7',textTransform:'uppercase',letterSpacing:1,marginBottom:8}}>🎈 Материали</div>
+          <SummaryRow label="Балони (с буфер)" value={`€${calc.matBalloons.toFixed(2)}`} />
+          <SummaryRow label="Допълнения" value={`€${calc.matExtras.toFixed(2)}`} />
+          <SummaryRow label="Наем оборудване" value={`€${calc.matRentals.toFixed(2)}`} />
+          <SummaryRow label="Консумативи" value={`€${calc.matConsumables.toFixed(2)}`} sub="от Настройки" />
+          <SummaryRow label="Режийни" value={`€${calc.matOverhead.toFixed(2)}`} sub="от Настройки" />
+          <SummaryRow label="Общо материали" value={`€${calc.totalMaterials.toFixed(2)}`} bold color='#F3A2BE' />
+
+          <div style={{height:1,background:'#FFD3DD',margin:'12px 0'}}/>
+
+          <div style={{fontSize:11,fontWeight:700,color:'#81BFB7',textTransform:'uppercase',letterSpacing:1,marginBottom:8}}>⏱️ Труд</div>
+          <SummaryRow label="Подготовка вкъщи" value={`€${calc.laborHome.toFixed(2)}`} sub={`${calc.homeMin} мин`} />
+          <SummaryRow label="Монтаж на локация" value={`€${calc.laborLocation.toFixed(2)}`} sub={`${calc.locationMin} мин`} />
+          <SummaryRow label="Демонтаж" value={`€${calc.laborDismantle.toFixed(2)}`} sub={`${calc.dismantleMin} мин`} />
+          <SummaryRow label="Общо труд" value={`€${calc.totalLabor.toFixed(2)}`} bold color='#F3A2BE' />
+
+          <div style={{height:1,background:'#FFD3DD',margin:'12px 0'}}/>
+
+          <div style={{fontSize:11,fontWeight:700,color:'#81BFB7',textTransform:'uppercase',letterSpacing:1,marginBottom:8}}>🚗 Транспорт</div>
+          <SummaryRow label="Гориво + Амортизация" value={`€${calc.totalTransport.toFixed(2)}`} sub={`${(state.travel_km||0)*2} км`} />
+
+          <div style={{height:1,background:'#FFD3DD',margin:'12px 0'}}/>
+
+          <SummaryRow label="СЕБЕСТОЙНОСТ" value={`€${calc.costTotal.toFixed(2)}`} bold color='#3a2a35' />
+          <SummaryRow label={`Марж (${state.margin}${state.margin_type==='percent'?'%':'€'})`} value={`€${(calc.price-calc.costTotal).toFixed(2)}`} color='#81BFB7' />
+
+          {calc.discountAmount > 0 && (
+            <SummaryRow label={`Отстъпка (${state.discount}${state.discount_type==='percent'?'%':'€'})`} value={`-€${calc.discountAmount.toFixed(2)}`} color='#F3A2BE' />
+          )}
+
+          <div style={{background:'linear-gradient(135deg,#F3A2BE,#81BFB7)',borderRadius:12,padding:'14px 16px',marginTop:12,display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+            <span style={{fontWeight:900,color:'#fff',fontSize:16}}>ЦЕНА ЗА КЛИЕНТ</span>
+            <span style={{fontWeight:900,color:'#fff',fontSize:24}}>€{calc.finalPrice.toFixed(2)}</span>
+          </div>
+        </div>
+
+        {/* БУТОНИ */}
+        <div style={{display:'flex',gap:12,flexWrap:'wrap'}}>
+          <button onClick={()=>{
+            // TODO: PDF калкулация
+            alert('PDF калкулация — скоро!')
+          }} style={{flex:1,padding:'14px',background:'linear-gradient(135deg,#C6E6E3,#81BFB7)',border:'none',borderRadius:12,color:'#fff',fontWeight:700,cursor:'pointer',fontSize:13}}>
+            📄 Свали PDF калкулация
+          </button>
+          <button onClick={()=>{
+            // TODO: Работен лист
+            alert('Работен лист — скоро!')
+          }} style={{flex:1,padding:'14px',background:'linear-gradient(135deg,#FFD3DD,#F3A2BE)',border:'none',borderRadius:12,color:'#fff',fontWeight:700,cursor:'pointer',fontSize:13}}>
+            📋 Работен лист
+          </button>
+          <button onClick={()=>{
+            if (onCreateOffer) onCreateOffer(calc)
+          }} style={{flex:1,padding:'14px',background:'linear-gradient(135deg,#F3A2BE,#81BFB7)',border:'none',borderRadius:12,color:'#fff',fontWeight:800,cursor:'pointer',fontSize:13}}>
+            🎯 Създай оферта
+          </button>
+        </div>
+      </div>
+    )
+  }
   const renderTab = () => {
     if (step === 1) return Tab1()
     if (step === 2) return Tab2()
@@ -1407,7 +1631,8 @@ export default function NewCalculator({ onBack, inquiry, onCreateOffer }) {
     if (step === 6) return Tab6()
     if (step === 7) return Tab7()
     if (step === 8) return Tab8()
-    if (step === 9) return Tab9()      
+    if (step === 9) return Tab9()
+    if (step === 10) return Tab10()        
     return <div style={{textAlign:'center',padding:60,color:'#81BFB7'}}>🚧 Скоро...</div>
   }
 
