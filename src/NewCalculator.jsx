@@ -1321,6 +1321,83 @@ export default function NewCalculator({ onBack, inquiry, onCreateOffer }) {
       </div>
     )
   }
+  const Tab9 = () => {
+    const f = settings.finances || {}
+
+    return (
+      <div>
+        <div style={{background:'#fff',border:'2px solid #FFD3DD',borderRadius:16,padding:20,marginBottom:16}}>
+          <div style={{fontSize:12,fontWeight:900,color:'#F3A2BE',textTransform:'uppercase',letterSpacing:1.5,marginBottom:16,paddingBottom:8,borderBottom:'2px solid #FFD3DD'}}>
+            📈 Марж
+          </div>
+          <div style={{display:'flex',gap:8,marginBottom:12}}>
+            <button onClick={()=>set('margin_type','percent')} style={{flex:1,padding:'10px',borderRadius:10,border:'none',cursor:'pointer',fontWeight:700,fontSize:13,background:state.margin_type==='percent'?'#F3A2BE':'#f0f0f0',color:state.margin_type==='percent'?'#fff':'#81BFB7'}}>
+              % Процент
+            </button>
+            <button onClick={()=>set('margin_type','amount')} style={{flex:1,padding:'10px',borderRadius:10,border:'none',cursor:'pointer',fontWeight:700,fontSize:13,background:state.margin_type==='amount'?'#F3A2BE':'#f0f0f0',color:state.margin_type==='amount'?'#fff':'#81BFB7'}}>
+              € Сума
+            </button>
+          </div>
+          <div style={{display:'flex',gap:10,alignItems:'center',marginBottom:12}}>
+            <input style={{...inp,flex:1}} type="number" min={0} step={state.margin_type==='percent'?1:0.5} value={state.margin||0} onChange={e=>set('margin',+e.target.value)} />
+            <span style={{fontSize:16,fontWeight:700,color:'#F3A2BE'}}>{state.margin_type==='percent'?'%':'€'}</span>
+          </div>
+          <div style={{display:'flex',gap:8,flexWrap:'wrap'}}>
+            {[10,20,25,30,35,40,50].map(m=>(
+              <button key={m} onClick={()=>{set('margin',m);set('margin_type','percent')}} style={{padding:'6px 14px',borderRadius:8,border:'none',cursor:'pointer',fontWeight:700,fontSize:12,background:state.margin===m&&state.margin_type==='percent'?'#F3A2BE':'#f0f0f0',color:state.margin===m&&state.margin_type==='percent'?'#fff':'#81BFB7'}}>
+                {m}%
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div style={{background:'#fff',border:'2px solid #C6E6E3',borderRadius:16,padding:20,marginBottom:16}}>
+          <div style={{fontSize:12,fontWeight:900,color:'#81BFB7',textTransform:'uppercase',letterSpacing:1.5,marginBottom:16,paddingBottom:8,borderBottom:'2px solid #C6E6E3'}}>
+            🎁 Отстъпка
+          </div>
+          <div style={{display:'flex',gap:8,marginBottom:12}}>
+            <button onClick={()=>set('discount_type','none')} style={{flex:1,padding:'10px',borderRadius:10,border:'none',cursor:'pointer',fontWeight:700,fontSize:13,background:state.discount_type==='none'?'#81BFB7':'#f0f0f0',color:state.discount_type==='none'?'#fff':'#81BFB7'}}>
+              Без отстъпка
+            </button>
+            <button onClick={()=>set('discount_type','percent')} style={{flex:1,padding:'10px',borderRadius:10,border:'none',cursor:'pointer',fontWeight:700,fontSize:13,background:state.discount_type==='percent'?'#81BFB7':'#f0f0f0',color:state.discount_type==='percent'?'#fff':'#81BFB7'}}>
+              % Процент
+            </button>
+            <button onClick={()=>set('discount_type','amount')} style={{flex:1,padding:'10px',borderRadius:10,border:'none',cursor:'pointer',fontWeight:700,fontSize:13,background:state.discount_type==='amount'?'#81BFB7':'#f0f0f0',color:state.discount_type==='amount'?'#fff':'#81BFB7'}}>
+              € Сума
+            </button>
+          </div>
+          {state.discount_type !== 'none' && (
+            <div style={{display:'flex',gap:10,alignItems:'center'}}>
+              <input style={{...inp,flex:1}} type="number" min={0} step={state.discount_type==='percent'?1:0.5} value={state.discount||0} onChange={e=>set('discount',+e.target.value)} />
+              <span style={{fontSize:16,fontWeight:700,color:'#81BFB7'}}>{state.discount_type==='percent'?'%':'€'}</span>
+            </div>
+          )}
+        </div>
+
+        <div style={{background:'#fff',border:'2px solid #C6E6E3',borderRadius:16,padding:20}}>
+          <div style={{fontSize:12,fontWeight:900,color:'#81BFB7',textTransform:'uppercase',letterSpacing:1.5,marginBottom:16,paddingBottom:8,borderBottom:'2px solid #C6E6E3'}}>
+            📦 Допълнителни разходи
+          </div>
+          <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12}}>
+            <div>
+              <div style={{fontSize:11,fontWeight:700,color:'#81BFB7',textTransform:'uppercase',letterSpacing:1,marginBottom:6}}>Консумативи (€)</div>
+              <div style={{padding:'10px 13px',background:'#F0F9F8',borderRadius:8,fontSize:13,color:'#3a2a35',fontWeight:600}}>
+                €{(f.consumables_per_event||2).toFixed(2)}
+                <span style={{fontSize:10,color:'#81BFB7',marginLeft:8}}>от Настройки</span>
+              </div>
+            </div>
+            <div>
+              <div style={{fontSize:11,fontWeight:700,color:'#81BFB7',textTransform:'uppercase',letterSpacing:1,marginBottom:6}}>Режийни (€)</div>
+              <div style={{padding:'10px 13px',background:'#F0F9F8',borderRadius:8,fontSize:13,color:'#3a2a35',fontWeight:600}}>
+                €{(f.overhead_per_event||5).toFixed(2)}
+                <span style={{fontSize:10,color:'#81BFB7',marginLeft:8}}>от Настройки</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
   const renderTab = () => {
     if (step === 1) return Tab1()
     if (step === 2) return Tab2()
@@ -1329,7 +1406,8 @@ export default function NewCalculator({ onBack, inquiry, onCreateOffer }) {
     if (step === 5) return Tab5()
     if (step === 6) return Tab6()
     if (step === 7) return Tab7()
-    if (step === 8) return Tab8()    
+    if (step === 8) return Tab8()
+    if (step === 9) return Tab9()      
     return <div style={{textAlign:'center',padding:60,color:'#81BFB7'}}>🚧 Скоро...</div>
   }
 
