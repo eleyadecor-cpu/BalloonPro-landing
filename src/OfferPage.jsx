@@ -69,6 +69,8 @@ function OfferForm({ offer, prefill, onClose, onSaved }) {
         valid_until: offer.valid_until ? formatDate(offer.valid_until) : '',
         items: offer.items || [],
         show_prices: offer.show_prices || false,
+        subtotal: offer.subtotal || offer.calc_data?.price || 0,
+        total: offer.total || offer.calc_data?.finalPrice || 0,
       })
     } else if (prefill) {
       setForm(p => ({
@@ -455,9 +457,9 @@ export default function OfferPage({ onBack, prefillInquiry }) {
         <div style={card}>
           <div style={{ fontSize:11, fontWeight:700, color:'#F3A2BE', textTransform:'uppercase', letterSpacing:1, marginBottom:14 }}>💰 Финанси</div>
           {[
-            ['Сума', `€${selected.subtotal?.toFixed(2)}`],
+            ['Сума', `€${(selected.subtotal || selected.calc_data?.price || 0).toFixed(2)}`],
             ['Отстъпка', selected.discount>0?`-€${selected.discount?.toFixed(2)}`:null],
-            ['Общо', `€${selected.total?.toFixed(2)}`],
+            ['Общо', `€${(selected.total || selected.calc_data?.finalPrice || 0).toFixed(2)}`],
             ['Депозит', selected.deposit>0?`€${selected.deposit?.toFixed(2)}`:null],
             ['Краен срок депозит', formatDate(selected.deposit_due_date)],
             ['Валидна до', formatDate(selected.valid_until)],
