@@ -11,6 +11,7 @@ import CalculatorPage from './CalculatorPage.jsx';
 import { supabase } from './supabaseClient';
 import SettingsPage from './SettingsPage.jsx'
 import NewCalculator from './NewCalculator.jsx'
+import CalendarPage from './CalendarPage.jsx'
 
 const DAYS = ['П','В','С','Ч','П','С','Н'];
 const MONTHS = ['Януари','Февруари','Март','Април','Май','Юни','Юли','Август','Септември','Октомври','Ноември','Декември'];
@@ -55,6 +56,9 @@ const Dashboard = () => {
   const offset = firstDay === 0 ? 6 : firstDay - 1
   const daysInMonth = new Date(year, month + 1, 0).getDate()
   const [showSettings, setShowSettings] = useState(false)
+  const [showCalendar, setShowCalendar] = useState(false)
+  const [calendarDate, setCalendarDate] = useState(null)
+  const [calendarMyDay, setCalendarMyDay] = useState(false)
   const [showNewCalc, setShowNewCalc] = useState(false)
 
   useEffect(() => {
@@ -105,6 +109,11 @@ const Dashboard = () => {
   if (showInventory) return <InventoryPage onBack={() => setShowInventory(false)} />
   if (showThemes) return <ThemesPage onBack={() => setShowThemes(false)} />
   if (showNewCalc) return <NewCalculator onBack={() => setShowNewCalc(false)} />
+  if (showCalendar) return <CalendarPage
+  onBack={() => { setShowCalendar(false); setCalendarDate(null); setCalendarMyDay(false) }}
+  initialDate={calendarDate}
+  myDay={calendarMyDay}
+/>
   if (showOffers) return <OfferPage onBack={() => { setShowOffers(false); setOpenNewOffer(false); setCalcOfferData(null) }} prefillInquiry={calcOfferData} openNew={openNewOffer || !!calcOfferData} />
   if (showCalculator) return <CalculatorPage inquiry={calcOfferData} onBack={() => { setShowCalculator(false); setCalcOfferData(null) }} onCreateOffer={(data) => { setCalcOfferData(data); setShowCalculator(false); setShowOffers(true) }} />
   if (showInquiries) return (
@@ -194,6 +203,7 @@ const Dashboard = () => {
         {navBtn('Запитвания','📝',()=>setShowInquiries(true),'linear-gradient(135deg,#FFD3DD,#F3A2BE)')}
         {navBtn('Задачи','✅',()=>setShowTasks(true),'linear-gradient(135deg,#C6E6E3,#81BFB7)')}
         {navBtn('Оферти','📄',()=>setShowOffers(true),'linear-gradient(135deg,#FFD3DD,#F3A2BE)')}
+        {navBtn('Календар','📅',()=>setShowCalendar(true),'linear-gradient(135deg,#C6E6E3,#81BFB7)')}
         {navBtn('Клиенти','👥',()=>setShowClients(true),'linear-gradient(135deg,#C6E6E3,#81BFB7)')}
         {navBtn('Финанси','💰',()=>{},'linear-gradient(135deg,#FFD3DD,#F3A2BE)')}
         {navBtn('Склад','📦',()=>setShowInventory(true),'linear-gradient(135deg,#C6E6E3,#81BFB7)')}
@@ -222,7 +232,7 @@ const Dashboard = () => {
           <div style={card}>
             <div style={{ fontSize:11, fontWeight:700, color:'#81BFB7', textTransform:'uppercase', letterSpacing:1, marginBottom:12 }}>⚡ Бърз достъп</div>
             <div style={{ display:'flex', flexDirection:'column', gap:6 }}>
-              <button style={{ padding:'10px 12px', background:'linear-gradient(135deg,#FFD3DD,#F3A2BE)', border:'none', borderRadius:10, color:'#fff', fontWeight:700, fontSize:12, cursor:'pointer', textAlign:'left' }}>🌅 Моя Ден</button>
+              <button onClick={() => { setCalendarDate(new Date()); setCalendarMyDay(true); setShowCalendar(true) }} style={{ padding:'10px 12px', background:'linear-gradient(135deg,#FFD3DD,#F3A2BE)', border:'none', borderRadius:10, color:'#fff', fontWeight:700, fontSize:12, cursor:'pointer', textAlign:'left' }}>🌅 Моя Ден</button>
               <button style={{ padding:'10px 12px', background:'rgba(255,255,255,0.7)', border:'1px solid #C6E6E3', borderRadius:10, color:'#81BFB7', fontWeight:700, fontSize:12, cursor:'pointer', textAlign:'left' }}>📊 Месечен отчет</button>
               <button onClick={() => setShowInventory(true)} style={{ padding:'10px 12px', background:'rgba(255,255,255,0.7)', border:'1px solid #C6E6E3', borderRadius:10, color:'#81BFB7', fontWeight:700, fontSize:12, cursor:'pointer', textAlign:'left' }}>📦 Провери склада</button>
             </div>
@@ -341,7 +351,7 @@ const Dashboard = () => {
               {Array(daysInMonth).fill(null).map((_,i) => {
                 const day = i+1
                 const isToday = day === today.getDate()
-                return <div key={day} style={{ padding:'5px 2px', borderRadius:6, fontWeight:isToday?900:400, background:isToday?'#F3A2BE':'transparent', color:isToday?'#fff':'#3a2a35', cursor:'pointer' }}>{day}</div>
+                return <div key={day} onClick={() => { setCalendarDate(new Date(year, month, day)); setShowCalendar(true) }} style={{ padding:'5px 2px', borderRadius:6, fontWeight:isToday?900:400, background:isToday?'#F3A2BE':'transparent', color:isToday?'#fff':'#3a2a35', cursor:'pointer' }}>{day}</div>
               })}
             </div>
           </div>
