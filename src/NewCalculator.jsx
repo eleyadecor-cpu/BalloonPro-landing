@@ -1941,10 +1941,7 @@ export default function NewCalculator({ onBack, inquiry, onCreateOffer }) {
 
     const dateToISO = (d) => {
       if (!d) return null
-      if (d.includes('-')) return d
-      const p = d.split('.')
-      if (p.length===3) return `${p[2]}-${p[1].padStart(2,'0')}-${p[0].padStart(2,'0')}`
-      return null
+      return d
     }
 
     const handleSave = async () => {
@@ -2109,21 +2106,11 @@ export default function NewCalculator({ onBack, inquiry, onCreateOffer }) {
                 </div>
                 <div>
                   <div style={{fontSize:11,color:'#81BFB7',marginBottom:4}}>Краен срок депозит</div>
-                  <input style={inp} placeholder="дд.мм.гггг" maxLength={10} value={offerForm.deposit_due_date} onChange={e=>{
-                    let v=e.target.value.replace(/[^0-9.]/g,'')
-                    if(v.length===2&&!v.includes('.'))v+='.'
-                    if(v.length===5&&v.split('.').length===2)v+='.'
-                    setOF('deposit_due_date',v)
-                  }} />
+                  <input style={inp} type="date" value={offerForm.deposit_due_date} onChange={e=>setOF('deposit_due_date',e.target.value)} />
                 </div>
                 <div>
                   <div style={{fontSize:11,color:'#81BFB7',marginBottom:4}}>Валидна до</div>
-                  <input style={inp} placeholder="дд.мм.гггг" maxLength={10} value={offerForm.valid_until} onChange={e=>{
-                    let v=e.target.value.replace(/[^0-9.]/g,'')
-                    if(v.length===2&&!v.includes('.'))v+='.'
-                    if(v.length===5&&v.split('.').length===2)v+='.'
-                    setOF('valid_until',v)
-                  }} />
+                  <input style={inp} type="date" value={offerForm.valid_until} onChange={e=>setOF('valid_until',e.target.value)} />
                 </div>
               </div>
             </div>
