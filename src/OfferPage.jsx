@@ -66,6 +66,7 @@ function OfferForm({ offer, prefill, onClose, onSaved }) {
       const baseTotal = offer.calc_data?.finalPrice || offer.total || 0
       setForm({
         ...offer,
+        discount: offer.discount ? Math.round(offer.discount * 100) / 100 : 0,
         event_date: offer.event_date ? formatDate(offer.event_date) : '',
         deposit_due_date: offer.deposit_due_date ? formatDate(offer.deposit_due_date) : '',
         valid_until: offer.valid_until ? formatDate(offer.valid_until) : '',
@@ -204,7 +205,7 @@ function OfferForm({ offer, prefill, onClose, onSaved }) {
     payload.visual_url_2 = visualUrls[1] || null
     payload.visual_url_3 = visualUrls[2] || null
 
-    const { clients, ...cleanPayload } = payload
+    const { clients, base_subtotal, ...cleanPayload } = payload
     const { error: dbErr } = offer
       ? await supabase.from('offers').update(cleanPayload).eq('id', offer.id)
       : await supabase.from('offers').insert([cleanPayload])
