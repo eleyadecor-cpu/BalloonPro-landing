@@ -71,7 +71,7 @@ const Dashboard = () => {
     const [inq, tsk, off] = await Promise.all([
       supabase.from('inquiries').select('*').order('created_at', { ascending: false }).limit(3),
       supabase.from('tasks').select('*').eq('status', 'pending').order('due_date', { ascending: true }).limit(5),
-      supabase.from('offers').select('*, clients(name)').order('created_at', { ascending: false }).limit(3),
+      supabase.from('offers').select('*, clients(name)').order('created_at', { ascending: false }).limit(10),
     ])
     setInquiries(inq.data || [])
     setTasks(tsk.data || [])
@@ -101,6 +101,7 @@ const Dashboard = () => {
   }
 
   const PRIORITY_COLOR = { low:'#81BFB7', normal:'#F3A2BE', high:'#c0892b', urgent:'#c0392b' }
+  const toISO = (y, m, d) => `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`
   const card = { background:'rgba(255,255,255,0.8)', borderRadius:20, border:'1px solid rgba(243,162,190,0.2)', padding:16 }
 
   // Навигация
@@ -114,7 +115,7 @@ const Dashboard = () => {
   initialDate={calendarDate}
   myDay={calendarMyDay}
 />
-  if (showOffers) return <OfferPage onBack={() => { setShowOffers(false); setOpenNewOffer(false); setCalcOfferData(null) }} prefillInquiry={calcOfferData} openNew={openNewOffer || !!calcOfferData} />
+  if (showOffers) return <OfferPage onBack={() => { setShowOffers(false); setOpenNewOffer(false); setCalcOfferData(null); loadData() }} prefillInquiry={calcOfferData} openNew={openNewOffer || !!calcOfferData} />
   if (showCalculator) return <CalculatorPage inquiry={calcOfferData} onBack={() => { setShowCalculator(false); setCalcOfferData(null) }} onCreateOffer={(data) => { setCalcOfferData(data); setShowCalculator(false); setShowOffers(true) }} />
   if (showInquiries) return (
     <div style={{ padding:24, background:'linear-gradient(135deg,#FFD3DD 0%,#F0F9F8 45%,#C6E6E3 100%)', minHeight:'100vh', fontFamily:'sans-serif' }}>
@@ -325,7 +326,7 @@ const Dashboard = () => {
               <div style={{ fontSize:10, fontWeight:700, color:'#81BFB7', textTransform:'uppercase', letterSpacing:1, marginBottom:12 }}>📄 Последни оферти</div>
               {offers.length === 0 && <div style={{ fontSize:12, color:'#81BFB7', textAlign:'center', padding:16 }}>Няма оферти</div>}
               {offers.map(off => (
-                <div key={off.id} onClick={() => setShowOffers(true)} style={{ display:'flex', justifyContent:'space-between', alignItems:'center', padding:'8px 0', borderBottom:'1px solid rgba(198,230,227,0.3)', cursor:'pointer' }}>
+                <div key={off.id} onClick={() => { setShowOffers(true); loadData() }} style={{ display:'flex', justifyContent:'space-between', alignItems:'center', padding:'8px 0', borderBottom:'1px solid rgba(198,230,227,0.3)', cursor:'pointer' }}>
                   <div>
                     <div style={{ fontSize:12, fontWeight:700, color:'#3a2a35' }}>{off.offer_number}</div>
                     <div style={{ fontSize:10, color:'#81BFB7' }}>{off.clients?.name||'—'} · €{off.total?.toFixed(2)}</div>
@@ -351,7 +352,15 @@ const Dashboard = () => {
               {Array(daysInMonth).fill(null).map((_,i) => {
                 const day = i+1
                 const isToday = day === today.getDate()
-                return <div key={day} onClick={() => { setCalendarDate(new Date(year, month, day)); setShowCalendar(true) }} style={{ padding:'5px 2px', borderRadius:6, fontWeight:isToday?900:400, background:isToday?'#F3A2BE':'transparent', color:isToday?'#fff':'#3a2a35', cursor:'pointer' }}>{day}</div>
+                const iso = toISO(year, month, day)
+                const hasEvent = offers.some(o => o.event_date === iso && o.status === 'accepted')
+                return (
+                  <div key={day} onClick={() => { setCalendarDate(new Date(year, month, day)); setShowCalendar(true) }}
+                    style={{ padding:'5px 2px', borderRadius:6, fontWeight:isToday?900:400, background:isToday?'#F3A2BE':'transparent', color:isToday?'#fff':'#3a2a35', cursor:'pointer', position:'relative' }}>
+                    {day}
+                    {hasEvent && <div style={{ width:4, height:4, borderRadius:'50%', background: isToday?'#fff':'#F3A2BE', margin:'1px auto 0' }} />}
+                  </div>
+                )
               })}
             </div>
           </div>
