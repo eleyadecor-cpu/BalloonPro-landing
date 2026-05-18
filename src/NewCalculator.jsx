@@ -1990,7 +1990,8 @@ export default function NewCalculator({ onBack, inquiry, onCreateOffer }) {
       items.push({ description: `Балони ${c.name} ${t.main_size_inch}"`, category: 'Балони', quantity: qty, unit_price: 0, total: 0 })
     })
   }
-})
+        })
+      });
       (state.extras||[]).forEach(e => {
         items.push({ description: e.description || e.type, category: 'Допълнение', quantity: 1, unit_price: 0, total: 0 })
       })
