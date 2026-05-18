@@ -62,6 +62,8 @@ function OfferForm({ offer, prefill, onClose, onSaved }) {
   useEffect(() => {
     loadData()
     if (offer) {
+      const baseSubtotal = offer.calc_data?.price || offer.subtotal || 0
+      const baseTotal = offer.calc_data?.finalPrice || offer.total || 0
       setForm({
         ...offer,
         event_date: offer.event_date ? formatDate(offer.event_date) : '',
@@ -69,9 +71,15 @@ function OfferForm({ offer, prefill, onClose, onSaved }) {
         valid_until: offer.valid_until ? formatDate(offer.valid_until) : '',
         items: offer.items || [],
         show_prices: offer.show_prices || false,
-        subtotal: offer.subtotal || offer.calc_data?.price || 0,
-        total: offer.total || offer.calc_data?.finalPrice || 0,
+        subtotal: baseSubtotal,
+        total: baseTotal,
+        base_subtotal: baseSubtotal,
       })
+      setVisualPreviews([
+        offer.visual_url_1 || null,
+        offer.visual_url_2 || null,
+        offer.visual_url_3 || null,
+      ])
     } else if (prefill) {
       setForm(p => ({
         ...p,
@@ -153,12 +161,15 @@ function OfferForm({ offer, prefill, onClose, onSaved }) {
   }
 
   const recalculate = (items, discount, delivery, deliveryPrice, installation, installationPrice, dismantling, dismantlingPrice) => {
-    const itemsTotal = items.reduce((s,i) => s + (i.total||0), 0)
-    const services = (delivery?+deliveryPrice:0) + (installation?+installationPrice:0) + (dismantling?+dismantlingPrice:0)
-    const subtotal = itemsTotal + services
-    const discountNum = +discount || 0
-    const total = Math.max(0, subtotal - discountNum)
-    setForm(p => ({ ...p, subtotal, total }))
+    setForm(p => {
+      const itemsTotal = items.reduce((s,i) => s + (i.total||0), 0)
+      const services = (delivery?+deliveryPrice:0) + (installation?+installationPrice:0) + (dismantling?+dismantlingPrice:0)
+      const base = p.base_subtotal > 0 ? p.base_subtotal : itemsTotal
+      const subtotal = base + services
+      const discountNum = +discount || 0
+      const total = Math.max(0, subtotal - discountNum)
+      return { ...p, subtotal, total }
+    })
   }
 
   const handleServiceChange = (key, val) => {
@@ -360,8 +371,8 @@ function OfferForm({ offer, prefill, onClose, onSaved }) {
             <div key={i} style={{ background:'#F0F9F8', borderRadius:10, padding:10, border:'1px solid #C6E6E3' }}>
               <div style={{ fontSize:11, color:'#81BFB7', fontWeight:700, marginBottom:6 }}>Визуализация {i+1}</div>
               <input type="file" accept="image/*" onChange={e => handleVisual(e, i)} style={{ fontSize:11, marginBottom:6, width:'100%' }} />
-              {visualPreviews[i] && (
-                <img src={visualPreviews[i]} alt={`visual ${i+1}`} style={{ width:'100%', height:120, objectFit:'cover', borderRadius:8 }} />
+              {(visualPreviews[i] || form[`visual_url_${i+1}`]) && (
+                <img src={visualPreviews[i] || form[`visual_url_${i+1}`]} alt={`visual ${i+1}`} style={{ width:'100%', height:120, objectFit:'cover', borderRadius:8 }} />
               )}
             </div>
           ))}
@@ -479,7 +490,7 @@ export default function OfferPage({ onBack, prefillInquiry }) {
             <div key={i} style={{ display:'flex', justifyContent:'space-between', padding:'8px 0', borderBottom:'1px solid rgba(198,230,227,0.3)', fontSize:13 }}>
               <div>
                 <div style={{ fontWeight:600, color:'#3a2a35' }}>{item.description}</div>
-                <div style={{ fontSize:11, color:'#81BFB7' }}>{item.quantity} × €{item.unit_price}</div>
+                {item.quantity > 1 && <div style={{ fontSize:11, color:'#81BFB7' }}>{item.quantity} бр.</div>}
               </div>
               <div style={{ fontWeight:700, color:'#F3A2BE' }}>€{item.total?.toFixed(2)}</div>
             </div>
@@ -593,9 +604,9 @@ export default function OfferPage({ onBack, prefillInquiry }) {
             </ul>
 
             <div class="totals">
-              <div class="total-row"><span>Сума</span><span>€${(selected.subtotal||0).toFixed(2)}</span></div>
+              <div class="total-row"><span>Сума</span><span>€${(selected.calc_data?.price || selected.subtotal||0).toFixed(2)}</span></div>
               ${selected.discount>0?`<div class="total-row discount"><span>Отстъпка</span><span>-€${(selected.discount||0).toFixed(2)}</span></div>`:''}
-              <div class="total-row final"><span>ОБЩО</span><span>€${(selected.total||0).toFixed(2)}</span></div>
+              <div class="total-row final"><span>ОБЩО</span><span>€${(selected.calc_data?.finalPrice || selected.total||0).toFixed(2)}</span></div>
             </div>
 
             ${selected.deposit>0?`
@@ -607,10 +618,6 @@ export default function OfferPage({ onBack, prefillInquiry }) {
             ${selected.notes?`
             <div class="section-title" style="margin-top:20px">Бележки</div>
             <div class="notes-box">${selected.notes}</div>`:''}
-          </div>
-            ${selected.notes?`
-            <div class="section-title" style="margin-top:20px">Бележки</div>
-            <div class="notes-box">${selected.notes}</div>`:''}
 
             ${(selected.visual_url_1||selected.visual_url_2||selected.visual_url_3)?`
             <div class="section-title" style="margin-top:20px">Визуализации</div>
@@ -618,9 +625,11 @@ export default function OfferPage({ onBack, prefillInquiry }) {
               ${[selected.visual_url_1,selected.visual_url_2,selected.visual_url_3].filter(Boolean).map(url=>`
                 <img src="${url}" style="width:100%;height:180px;object-fit:cover;border-radius:8px;border:1px solid #FFD3DD" />`).join('')}
             </div>`:''}
-          </div>  
+          </div>
           <div class="footer">
-            
+            ${s.offer_footer_text||'Благодарим Ви за доверието! 🌸'}<br>
+            <strong>Eleya Decor Studio</strong> · ${s.company_email||'eleya.decor@gmail.com'} · ${s.company_phone||'+359 877 163 171'}
+          </div>
           </body></html>`
 
           const w = window.open('','_blank','width=900,height=1100')
