@@ -67,6 +67,20 @@ export default function NewCalculator({ onBack, inquiry, onCreateOffer }) {
   const [settings, setSettings] = useState({})
   const [balloonPrices, setBalloonPrices] = useState([])
   const [clusterTemplates, setClusterTemplates] = useState([])
+  const [showOfferPopup, setShowOfferPopup] = useState(false)
+  const [offerForm, setOfferForm] = useState({
+    client_id: '',
+    client_name_manual: '',
+    client_phone_manual: '',
+    deposit: 0,
+    deposit_due_date: '',
+    valid_until: '',
+    notes: '',
+    visual_files: [null, null, null],
+    visual_previews: [null, null, null],
+  })
+  const [clients, setClients] = useState([])
+  const [savingOffer, setSavingOffer] = useState(false)
   const set = (k, v) => setState(p => ({...p, [k]: v}))
 
   useEffect(() => { loadSettings() }, [])
@@ -106,6 +120,8 @@ export default function NewCalculator({ onBack, inquiry, onCreateOffer }) {
     setSettings({ times: ts.data || {}, finances: fs.data || {} })
     setBalloonPrices(bp.data || [])
     setClusterTemplates(ct.data || [])
+    const { data: clientsData } = await supabase.from('clients').select('id,name,phone').order('name')
+    setClients(clientsData || [])
   }
 
   const formatDate = (d) => {
@@ -1881,28 +1897,7 @@ export default function NewCalculator({ onBack, inquiry, onCreateOffer }) {
           <button onClick={()=>setShowOfferPopup(true)} style={{flex:1,padding:'14px',background:'linear-gradient(135deg,#F3A2BE,#81BFB7)',border:'none',borderRadius:12,color:'#fff',fontWeight:800,cursor:'pointer',fontSize:13}}>
             🎯 Създай оферта
           </button>
-           const [step, setStep] = useState(1)
-           const [state, setState] = useState(INIT)
-           const [settings, setSettings] = useState({})
-           const [balloonPrices, setBalloonPrices] = useState([])
-           const [clusterTemplates, setClusterTemplates] = useState([])
-           const [showOfferPopup, setShowOfferPopup] = useState(false)
-           const [offerForm, setOfferForm] = useState({
-            client_id: '',
-            client_name_manual: '',
-            client_phone_manual: '',
-            deposit: 0,
-            deposit_due_date: '',
-            valid_until: '',
-            notes: '',
-            visual_files: [null, null, null],
-            visual_previews: [null, null, null],
-           const { data: clientsData } = await supabase.from('clients').select('id,name,phone').order('name')
-           setClients(clientsData || [])
-  })
-  const [clients, setClients] = useState([])
-  const [savingOffer, setSavingOffer] = useState(false)
-          
+                     
         </div>
       </div>
     )
