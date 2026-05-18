@@ -3,11 +3,13 @@ import { inp, Lbl } from './shared.jsx'
 import { supabase } from './supabaseClient'
 
 const STATUS = {
-  draft:    { label: '📝 Чернова',  bg: '#F0F9F8', color: '#81BFB7' },
-  sent:     { label: '📤 Изпратена', bg: '#FFD3DD', color: '#F3A2BE' },
-  accepted: { label: '✅ Приета',    bg: '#C6E6E3', color: '#2a5450' },
-  rejected: { label: '❌ Отказана',  bg: '#FFD3DD', color: '#c0392b' },
-  expired:  { label: '⏰ Изтекла',   bg: '#f0f0f0', color: '#888' },
+  draft:         { label: '📝 Чернова',       bg: '#F0F9F8', color: '#81BFB7' },
+  sent:          { label: '📤 Изпратена',      bg: '#FFD3DD', color: '#F3A2BE' },
+  accepted:      { label: '✅ Приета',         bg: '#C6E6E3', color: '#2a5450' },
+  deposit_paid:  { label: '💰 Депозит платен', bg: '#FFF3CD', color: '#856404' },
+  completed:     { label: '🎉 Завършена',      bg: '#D4EDDA', color: '#155724' },
+  rejected:      { label: '❌ Отказана',       bg: '#FFD3DD', color: '#c0392b' },
+  expired:       { label: '⏰ Изтекла',        bg: '#f0f0f0', color: '#888' },
 }
 
 const inp2 = { width:'100%', padding:'10px 13px', border:'1px solid #C6E6E3', borderRadius:8, fontSize:14, color:'#3a2a35', background:'#F0F9F8', outline:'none', boxSizing:'border-box' }
@@ -503,13 +505,10 @@ export default function OfferPage({ onBack, prefillInquiry }) {
           const clientName = selected.clients?.name || '—'
           const formatD = (iso) => { if (!iso) return '—'; const p = iso.split('-'); return `${p[2]}.${p[1]}.${p[0]}` }
 
-          const itemRows = (selected.items||[]).map(item => `
-            <tr>
-              <td>${item.description||'—'}</td>
-              <td style="text-align:center">${item.quantity}</td>
-              <td style="text-align:right">€${(item.unit_price||0).toFixed(2)}</td>
-              <td style="text-align:right;font-weight:700">€${(item.total||0).toFixed(2)}</td>
-            </tr>`).join('')
+          const itemList = (selected.items||[]).map(item => `
+            <li style="padding:6px 0; border-bottom:1px solid #f5f5f5; font-size:13px; color:#3a2a35;">
+             ${item.description||'—'}
+            </li>`).join('')
 
           const html = `<!DOCTYPE html><html><head><meta charset="UTF-8">
             <style>
@@ -586,21 +585,10 @@ export default function OfferPage({ onBack, prefillInquiry }) {
           </div>
 
           <div class="body">
-            <div class="section-title">Артикули и услуги</div>
-            <table>
-              <thead><tr>
-                <th>Описание</th>
-                <th style="text-align:center">Бр.</th>
-                <th style="text-align:right">Ед. цена</th>
-                <th style="text-align:right">Общо</th>
-              </tr></thead>
-              <tbody>
-                ${itemRows}
-                ${selected.delivery?`<tr class="services-row"><td>🚚 Доставка</td><td style="text-align:center">1</td><td style="text-align:right">€${(selected.delivery_price||0).toFixed(2)}</td><td style="text-align:right;font-weight:700">€${(selected.delivery_price||0).toFixed(2)}</td></tr>`:''}
-                ${selected.installation?`<tr class="services-row"><td>🔧 Монтаж</td><td style="text-align:center">1</td><td style="text-align:right">€${(selected.installation_price||0).toFixed(2)}</td><td style="text-align:right;font-weight:700">€${(selected.installation_price||0).toFixed(2)}</td></tr>`:''}
-                ${selected.dismantling?`<tr class="services-row"><td>📦 Демонтаж</td><td style="text-align:center">1</td><td style="text-align:right">€${(selected.dismantling_price||0).toFixed(2)}</td><td style="text-align:right;font-weight:700">€${(selected.dismantling_price||0).toFixed(2)}</td></tr>`:''}
-              </tbody>
-            </table>
+            <div class="section-title">Включено в украсата</div>
+            <ul style="list-style:none; padding:0; margin:0;">
+             ${itemList}
+            </ul>
 
             <div class="totals">
               <div class="total-row"><span>Сума</span><span>€${(selected.subtotal||0).toFixed(2)}</span></div>
@@ -630,10 +618,7 @@ export default function OfferPage({ onBack, prefillInquiry }) {
             </div>`:''}
           </div>  
           <div class="footer">
-            ${s.offer_footer_text||'Благодарим Ви за доверието! 🌸'}<br>
-            <strong>Eleya Decor Studio</strong> · ${s.company_email||'eleya.decor@gmail.com'} · ${s.company_phone||'+359 877 163 171'}
-          </div>
-
+            
           </body></html>`
 
           const w = window.open('','_blank','width=900,height=1100')

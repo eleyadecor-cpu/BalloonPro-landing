@@ -1976,14 +1976,21 @@ export default function NewCalculator({ onBack, inquiry, onCreateOffer }) {
       state.garlands.forEach(g => {
         items.push({ description: `${g.name} — ${g.length_cm} см`, category: 'Декорация', quantity: 1, unit_price: 0, total: 0 })
         g.templates.forEach(t => {
-          const colors = (t.colors||[]).filter(c=>c.name)
-          if (colors.length > 0) {
-            colors.forEach(c => {
-              items.push({ description: `Балони ${c.name} ${t.main_size_inch}"`, category: 'Балони', quantity: 0, unit_price: 0, total: 0 })
-            })
-          }
-        })
-      });
+  const colors = (t.colors||[]).filter(c=>c.name)
+  const clusters = t.cluster_count || (() => {
+    const price = balloonPrices.find(p => p.size_inch === t.main_size_inch)
+    const diamCm = price?.size_cm || (t.main_size_inch * 2.54)
+    const factor = t.main_per_cluster <= 4 ? 4.8 : 6.3
+    return Math.ceil((g.length_cm / diamCm) * factor / t.main_per_cluster)
+  })()
+  if (colors.length > 0) {
+    colors.forEach(c => {
+      const clCount = c.clusters || Math.floor(clusters / Math.max(colors.length, 1))
+      const qty = clCount * t.main_per_cluster
+      items.push({ description: `Балони ${c.name} ${t.main_size_inch}"`, category: 'Балони', quantity: qty, unit_price: 0, total: 0 })
+    })
+  }
+})
       (state.extras||[]).forEach(e => {
         items.push({ description: e.description || e.type, category: 'Допълнение', quantity: 1, unit_price: 0, total: 0 })
       })
@@ -2011,7 +2018,7 @@ export default function NewCalculator({ onBack, inquiry, onCreateOffer }) {
         location: state.location || null,
         guest_count: state.guest_count ? +state.guest_count : null,
         items,
-        subtotal: calc.finalPrice,
+        subtotal: calc.price,
         total: calc.finalPrice,
         discount: calc.discountAmount,
         deposit: +offerForm.deposit || 0,
