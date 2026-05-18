@@ -493,9 +493,67 @@ export default function OfferPage({ onBack, prefillInquiry }) {
                 <div style={{ fontWeight:600, color:'#3a2a35' }}>{item.description}</div>
                 {item.quantity > 1 && <div style={{ fontSize:11, color:'#81BFB7' }}>{item.quantity} бр.</div>}
               </div>
-              <div style={{ fontWeight:700, color:'#F3A2BE' }}>€{item.total?.toFixed(2)}</div>
             </div>
           ))}
+        </div>
+      )}
+
+      {selected.calc_data && (
+        <div style={{ ...card, marginBottom:16 }}>
+          <div style={{ fontSize:11, fontWeight:700, color:'#81BFB7', textTransform:'uppercase', letterSpacing:1, marginBottom:14 }}>🔒 Калкулация (само за теб)</div>
+          
+          <div style={{ fontSize:11, fontWeight:700, color:'#F3A2BE', textTransform:'uppercase', letterSpacing:1, marginBottom:8 }}>🎈 Материали</div>
+          {[
+            ['Балони (с буфер)', selected.calc_data.matBalloons],
+            ['Допълнения', selected.calc_data.matExtras],
+            ['Наем', selected.calc_data.matRentals],
+            ['Консумативи', selected.calc_data.matConsumables],
+            ['Режийни', selected.calc_data.matOverhead],
+          ].filter(([,v]) => v > 0).map(([l,v]) => (
+            <div key={l} style={{ display:'flex', justifyContent:'space-between', padding:'5px 0', borderBottom:'1px solid #F0F9F8', fontSize:12 }}>
+              <span style={{ color:'#81BFB7' }}>{l}</span>
+              <span style={{ color:'#3a2a35', fontWeight:600 }}>€{(v||0).toFixed(2)}</span>
+            </div>
+          ))}
+          <div style={{ display:'flex', justifyContent:'space-between', padding:'8px 0', fontSize:13, fontWeight:700, color:'#F3A2BE', marginBottom:12 }}>
+            <span>Общо материали</span>
+            <span>€{(selected.calc_data.totalMaterials||0).toFixed(2)}</span>
+          </div>
+
+          <div style={{ fontSize:11, fontWeight:700, color:'#F3A2BE', textTransform:'uppercase', letterSpacing:1, marginBottom:8 }}>⏱️ Труд</div>
+          {[
+            [`Подготовка вкъщи (${selected.calc_data.homeMin} мин)`, selected.calc_data.laborHome],
+            [`Монтаж (${selected.calc_data.locationMin} мин)`, selected.calc_data.laborLocation],
+            [`Демонтаж (${selected.calc_data.dismantleMin} мин)`, selected.calc_data.laborDismantle],
+          ].filter(([,v]) => v > 0).map(([l,v]) => (
+            <div key={l} style={{ display:'flex', justifyContent:'space-between', padding:'5px 0', borderBottom:'1px solid #F0F9F8', fontSize:12 }}>
+              <span style={{ color:'#81BFB7' }}>{l}</span>
+              <span style={{ color:'#3a2a35', fontWeight:600 }}>€{(v||0).toFixed(2)}</span>
+            </div>
+          ))}
+          <div style={{ display:'flex', justifyContent:'space-between', padding:'8px 0', fontSize:13, fontWeight:700, color:'#F3A2BE', marginBottom:12 }}>
+            <span>Общо труд</span>
+            <span>€{(selected.calc_data.totalLabor||0).toFixed(2)}</span>
+          </div>
+
+          {(selected.calc_data.totalTransport > 0) && (<>
+            <div style={{ fontSize:11, fontWeight:700, color:'#F3A2BE', textTransform:'uppercase', letterSpacing:1, marginBottom:8 }}>🚗 Транспорт</div>
+            <div style={{ display:'flex', justifyContent:'space-between', padding:'8px 0', fontSize:13, fontWeight:700, color:'#F3A2BE', marginBottom:12 }}>
+              <span>Общо транспорт</span>
+              <span>€{(selected.calc_data.totalTransport||0).toFixed(2)}</span>
+            </div>
+          </>)}
+
+          <div style={{ background:'linear-gradient(135deg,#FFD3DD,#F3A2BE)', borderRadius:12, padding:'12px 16px', display:'flex', justifyContent:'space-between', alignItems:'center' }}>
+            <div>
+              <div style={{ fontSize:11, color:'rgba(255,255,255,0.8)', fontWeight:700 }}>СЕБЕСТОЙНОСТ</div>
+              <div style={{ fontSize:11, color:'rgba(255,255,255,0.8)' }}>Марж: €{((selected.calc_data.price||0) - (selected.calc_data.costTotal||0)).toFixed(2)}</div>
+            </div>
+            <div style={{ textAlign:'right' }}>
+              <div style={{ fontSize:11, color:'rgba(255,255,255,0.8)' }}>Себестойност: €{(selected.calc_data.costTotal||0).toFixed(2)}</div>
+              <div style={{ fontSize:18, fontWeight:900, color:'#fff' }}>Цена: €{(selected.calc_data.price||0).toFixed(2)}</div>
+            </div>
+          </div>
         </div>
       )}
 
