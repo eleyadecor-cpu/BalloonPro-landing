@@ -1878,11 +1878,31 @@ export default function NewCalculator({ onBack, inquiry, onCreateOffer }) {
             📋 Работен лист
           </button>
                      
-          <button onClick={()=>{
-            if (onCreateOffer) onCreateOffer(calc)
-          }} style={{flex:1,padding:'14px',background:'linear-gradient(135deg,#F3A2BE,#81BFB7)',border:'none',borderRadius:12,color:'#fff',fontWeight:800,cursor:'pointer',fontSize:13}}>
+          <button onClick={()=>setShowOfferPopup(true)} style={{flex:1,padding:'14px',background:'linear-gradient(135deg,#F3A2BE,#81BFB7)',border:'none',borderRadius:12,color:'#fff',fontWeight:800,cursor:'pointer',fontSize:13}}>
             🎯 Създай оферта
           </button>
+           const [step, setStep] = useState(1)
+           const [state, setState] = useState(INIT)
+           const [settings, setSettings] = useState({})
+           const [balloonPrices, setBalloonPrices] = useState([])
+           const [clusterTemplates, setClusterTemplates] = useState([])
+           const [showOfferPopup, setShowOfferPopup] = useState(false)
+           const [offerForm, setOfferForm] = useState({
+            client_id: '',
+            client_name_manual: '',
+            client_phone_manual: '',
+            deposit: 0,
+            deposit_due_date: '',
+            valid_until: '',
+            notes: '',
+            visual_files: [null, null, null],
+            visual_previews: [null, null, null],
+           const { data: clientsData } = await supabase.from('clients').select('id,name,phone').order('name')
+           setClients(clientsData || [])
+  })
+  const [clients, setClients] = useState([])
+  const [savingOffer, setSavingOffer] = useState(false)
+          
         </div>
       </div>
     )
@@ -1900,9 +1920,258 @@ export default function NewCalculator({ onBack, inquiry, onCreateOffer }) {
     if (step === 10) return Tab10()        
     return <div style={{textAlign:'center',padding:60,color:'#81BFB7'}}>🚧 Скоро...</div>
   }
+  const OfferPopup = () => {
+    const calc = buildCalc()
+    const setOF = (k,v) => setOfferForm(p=>({...p,[k]:v}))
+    const selectedClient = clients.find(c=>c.id===offerForm.client_id)
 
+    const handleVisual = (e, index) => {
+      const file = e.target.files[0]
+      if (!file) return
+      const newFiles = [...offerForm.visual_files]
+      newFiles[index] = file
+      const newPreviews = [...offerForm.visual_previews]
+      newPreviews[index] = URL.createObjectURL(file)
+      setOfferForm(p=>({...p, visual_files: newFiles, visual_previews: newPreviews}))
+    }
+
+    const uploadVisual = async (file) => {
+      const ext = file.name.split('.').pop()
+      const path = `visuals/${Date.now()}.${ext}`
+      const { error } = await supabase.storage.from('inquiries').upload(path, file)
+      if (error) return null
+      const { data } = supabase.storage.from('inquiries').getPublicUrl(path)
+      return data.publicUrl
+    }
+
+    const dateToISO = (d) => {
+      if (!d) return null
+      if (d.includes('-')) return d
+      const p = d.split('.')
+      if (p.length===3) return `${p[2]}-${p[1].padStart(2,'0')}-${p[0].padStart(2,'0')}`
+      return null
+    }
+
+    const handleSave = async () => {
+      if (!offerForm.client_id && !offerForm.client_name_manual.trim()) {
+        alert('Избери клиент или въведи ime!')
+        return
+      }
+      setSavingOffer(true)
+
+      // Качваме визуализации
+      const visualUrls = [null, null, null]
+      for (let i=0; i<3; i++) {
+        if (offerForm.visual_files[i]) {
+          const url = await uploadVisual(offerForm.visual_files[i])
+          if (url) visualUrls[i] = url
+        }
+      }
+
+      // Ако е нов клиент — създаваме го
+      let clientId = offerForm.client_id
+      if (!clientId && offerForm.client_name_manual.trim()) {
+        const { data: newClient } = await supabase.from('clients').insert([{
+          name: offerForm.client_name_manual,
+          phone: offerForm.client_phone_manual,
+          status: 'regular',
+        }]).select()
+        clientId = newClient?.[0]?.id
+      }
+
+      // Артикули от калкулатора
+      const items = []
+      state.garlands.forEach(g => {
+        items.push({ description: `${g.name} — ${g.length_cm} см`, category: 'Декорация', quantity: 1, unit_price: 0, total: 0 })
+        g.templates.forEach(t => {
+          const colors = (t.colors||[]).filter(c=>c.name)
+          if (colors.length > 0) {
+            colors.forEach(c => {
+              items.push({ description: `Балони ${c.name} ${t.main_size_inch}"`, category: 'Балони', quantity: 0, unit_price: 0, total: 0 })
+            })
+          }
+        })
+      });
+      (state.extras||[]).forEach(e => {
+        items.push({ description: e.description || e.type, category: 'Допълнение', quantity: 1, unit_price: 0, total: 0 })
+      })
+      if (state.travel_km > 0) items.push({ description: 'Транспорт', category: 'Услуга', quantity: 1, unit_price: 0, total: 0 })
+
+      const eventDateISO = (() => {
+        if (!state.event_date) return null
+        if (state.event_date.includes('-')) return state.event_date
+        const p = state.event_date.split('.')
+        if (p.length===3) return `${p[2]}-${p[1].padStart(2,'0')}-${p[0].padStart(2,'0')}`
+        return null
+      })()
+
+      const history = [{
+        date: new Date().toISOString(),
+        action: 'Създадена',
+        note: 'Оферта създадена от калкулатора'
+      }]
+
+      const payload = {
+        client_id: clientId,
+        event_date: eventDateISO,
+        event_time: state.event_start || null,
+        event_type: state.event_type || null,
+        location: state.location || null,
+        guest_count: state.guest_count ? +state.guest_count : null,
+        items,
+        subtotal: calc.finalPrice,
+        total: calc.finalPrice,
+        discount: calc.discountAmount,
+        deposit: +offerForm.deposit || 0,
+        deposit_due_date: dateToISO(offerForm.deposit_due_date),
+        valid_until: dateToISO(offerForm.valid_until),
+        notes: offerForm.notes || null,
+        visual_url_1: visualUrls[0],
+        visual_url_2: visualUrls[1],
+        visual_url_3: visualUrls[2],
+        status: 'draft',
+        show_prices: false,
+        calc_data: calc,
+        garlands_data: state.garlands,
+        extras_data: state.extras,
+        inquiry_id: state.inquiry_id || null,
+        history,
+      }
+
+      const { error } = await supabase.from('offers').insert([payload])
+      setSavingOffer(false)
+
+      if (error) {
+        alert('Грешка: ' + error.message)
+        return
+      }
+
+      setShowOfferPopup(false)
+      alert('✅ Офертата е създадена! Можеш да я намериш в Оферти.')
+    }
+
+    return (
+      <div style={{position:'fixed',top:0,left:0,width:'100%',height:'100%',background:'rgba(58,42,53,0.6)',display:'flex',justifyContent:'center',alignItems:'center',zIndex:2000,padding:20}}>
+        <div style={{background:'#F0F9F8',borderRadius:32,width:'90%',maxWidth:700,maxHeight:'90vh',overflowY:'auto',boxShadow:'0 30px 60px rgba(0,0,0,0.3)'}}>
+
+          {/* ХЕДЪР */}
+          <div style={{padding:'20px 32px',borderBottom:'1px solid #FFD3DD',display:'flex',justifyContent:'space-between',alignItems:'center',background:'rgba(255,255,255,0.9)',borderTopLeftRadius:32,borderTopRightRadius:32}}>
+            <h2 style={{color:'#3a2a35',fontWeight:900,margin:0,fontSize:18}}>📄 Създай оферта</h2>
+            <button onClick={()=>setShowOfferPopup(false)} style={{border:'none',background:'#FFD3DD',borderRadius:'50%',width:36,height:36,cursor:'pointer',fontSize:18}}>✕</button>
+          </div>
+
+          <div style={{padding:'20px 32px 32px'}}>
+
+            {/* РЕЗЮМЕ ОТ КАЛКУЛАТОРА */}
+            <div style={{background:'linear-gradient(135deg,#FFD3DD,#F3A2BE)',borderRadius:12,padding:'12px 16px',marginBottom:16,color:'#fff'}}>
+              <div style={{fontSize:11,fontWeight:700,textTransform:'uppercase',letterSpacing:1,marginBottom:4}}>От калкулатора</div>
+              <div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+                <div style={{fontSize:13}}>
+                  {state.event_type||'Събитие'} · {state.event_date||'—'} · {state.location||'—'}
+                </div>
+                <div style={{fontSize:22,fontWeight:900}}>€{calc.finalPrice.toFixed(2)}</div>
+              </div>
+            </div>
+
+            {/* КЛИЕНТ */}
+            <div style={{background:'#fff',border:'1px solid #C6E6E3',borderRadius:12,padding:16,marginBottom:12}}>
+              <div style={{fontSize:11,fontWeight:700,color:'#81BFB7',textTransform:'uppercase',letterSpacing:1,marginBottom:12}}>👤 Клиент</div>
+              <div style={{marginBottom:10}}>
+                <div style={{fontSize:11,color:'#81BFB7',marginBottom:4}}>Избери от списъка:</div>
+                <select style={{...inp}} value={offerForm.client_id} onChange={e=>setOF('client_id',e.target.value)}>
+                  <option value="">-- Нов клиент --</option>
+                  {clients.map(c=>(
+                    <option key={c.id} value={c.id}>{c.name}{c.phone?` · ${c.phone}`:''}</option>
+                  ))}
+                </select>
+              </div>
+              {!offerForm.client_id && (
+                <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10}}>
+                  <div>
+                    <div style={{fontSize:11,color:'#81BFB7',marginBottom:4}}>Ime на клиента *</div>
+                    <input style={inp} placeholder="Мария Иванова" value={offerForm.client_name_manual} onChange={e=>setOF('client_name_manual',e.target.value)} />
+                  </div>
+                  <div>
+                    <div style={{fontSize:11,color:'#81BFB7',marginBottom:4}}>Телефон</div>
+                    <input style={inp} placeholder="+359 88..." value={offerForm.client_phone_manual} onChange={e=>setOF('client_phone_manual',e.target.value)} />
+                  </div>
+                </div>
+              )}
+              {selectedClient && (
+                <div style={{padding:'8px 12px',background:'#F0F9F8',borderRadius:8,fontSize:13,color:'#3a2a35'}}>
+                  ✅ {selectedClient.name} {selectedClient.phone?`· ${selectedClient.phone}`:''}
+                </div>
+              )}
+            </div>
+
+            {/* ФИНАНСИ */}
+            <div style={{background:'#fff',border:'1px solid #C6E6E3',borderRadius:12,padding:16,marginBottom:12}}>
+              <div style={{fontSize:11,fontWeight:700,color:'#81BFB7',textTransform:'uppercase',letterSpacing:1,marginBottom:12}}>💰 Финанси</div>
+              <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:10}}>
+                <div>
+                  <div style={{fontSize:11,color:'#81BFB7',marginBottom:4}}>Депозит (€)</div>
+                  <input style={inp} type="number" min={0} step={0.5} value={offerForm.deposit} onChange={e=>setOF('deposit',+e.target.value)} />
+                </div>
+                <div>
+                  <div style={{fontSize:11,color:'#81BFB7',marginBottom:4}}>Краен срок депозит</div>
+                  <input style={inp} placeholder="дд.мм.гггг" maxLength={10} value={offerForm.deposit_due_date} onChange={e=>{
+                    let v=e.target.value.replace(/[^0-9.]/g,'')
+                    if(v.length===2&&!v.includes('.'))v+='.'
+                    if(v.length===5&&v.split('.').length===2)v+='.'
+                    setOF('deposit_due_date',v)
+                  }} />
+                </div>
+                <div>
+                  <div style={{fontSize:11,color:'#81BFB7',marginBottom:4}}>Валидна до</div>
+                  <input style={inp} placeholder="дд.мм.гггг" maxLength={10} value={offerForm.valid_until} onChange={e=>{
+                    let v=e.target.value.replace(/[^0-9.]/g,'')
+                    if(v.length===2&&!v.includes('.'))v+='.'
+                    if(v.length===5&&v.split('.').length===2)v+='.'
+                    setOF('valid_until',v)
+                  }} />
+                </div>
+              </div>
+            </div>
+
+            {/* ВИЗУАЛИЗАЦИИ */}
+            <div style={{background:'#fff',border:'1px solid #C6E6E3',borderRadius:12,padding:16,marginBottom:12}}>
+              <div style={{fontSize:11,fontWeight:700,color:'#81BFB7',textTransform:'uppercase',letterSpacing:1,marginBottom:12}}>🎨 Визуализации (до 3)</div>
+              <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:10}}>
+                {[0,1,2].map(i=>(
+                  <div key={i} style={{background:'#F0F9F8',borderRadius:10,padding:10,border:'1px solid #C6E6E3'}}>
+                    <div style={{fontSize:11,color:'#81BFB7',fontWeight:700,marginBottom:6}}>Визуализация {i+1}</div>
+                    <input type="file" accept="image/*" onChange={e=>handleVisual(e,i)} style={{fontSize:11,width:'100%',marginBottom:6}} />
+                    {offerForm.visual_previews[i] && (
+                      <img src={offerForm.visual_previews[i]} alt="" style={{width:'100%',height:80,objectFit:'cover',borderRadius:8}} />
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* БЕЛЕЖКИ */}
+            <div style={{background:'#fff',border:'1px solid #C6E6E3',borderRadius:12,padding:16,marginBottom:16}}>
+              <div style={{fontSize:11,fontWeight:700,color:'#81BFB7',textTransform:'uppercase',letterSpacing:1,marginBottom:8}}>📝 Бележки към клиента</div>
+              <textarea style={{...inp,height:80,resize:'vertical'}} placeholder="Специални условия, забележки..." value={offerForm.notes} onChange={e=>setOF('notes',e.target.value)} />
+            </div>
+
+            {/* БУТОНИ */}
+            <div style={{display:'flex',gap:10}}>
+              <button onClick={()=>setShowOfferPopup(false)} style={{flex:1,padding:14,background:'#fff',border:'1px solid #C6E6E3',color:'#81BFB7',fontWeight:700,cursor:'pointer',borderRadius:12,fontSize:13}}>
+                Отказ
+              </button>
+              <button onClick={handleSave} disabled={savingOffer} style={{flex:2,padding:14,background:'linear-gradient(135deg,#FFD3DD,#F3A2BE)',color:'#fff',border:'none',fontWeight:800,cursor:'pointer',borderRadius:12,fontSize:13}}>
+                {savingOffer?'⏳ Записва...':'💾 Запази офертата'}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
   return (
     <div style={{padding:24, background:'linear-gradient(135deg,#FFD3DD 0%,#F0F9F8 45%,#C6E6E3 100%)', minHeight:'100vh', fontFamily:'sans-serif'}}>
+      {showOfferPopup && <OfferPopup />}
 
       {/* ХЕДЪР */}
       <div style={{display:'flex',alignItems:'center',gap:12,marginBottom:20}}>
